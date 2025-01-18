@@ -1,0 +1,18 @@
+{
+    "organização_militar": [
+        {
+            "Nome": "CeIMBra",
+            "Sigla": "CeIMBra",
+            "UASG": "787010",
+            "Indicativo": "CITBRA",
+            "Cidade": "Brasília-DF"
+        },
+        {
+            "Nome": "CEIMSPA",
+            "Sigla": "CEIMSPA",
+            "UASG": "818101",
+            "Indicativo": "CITSPA",
+            "Cidade": "São Pedro da Aldeia-RJ"
+        }
+    ]
+}

@@ -1,0 +1,307 @@
+from PyQt6.QtWidgets import *
+from PyQt6.QtGui import *
+from PyQt6.QtCore import *
+from paths import *
+from modules.utils.icon_loader import load_icons
+from assets.styles.styles import get_menu_button_style, get_menu_button_activated_style
+from modules.widgets import *
+from modules.config.config_widget import ConfigManager
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.icons = load_icons()
+        self.buttons = {}
+        self.active_button = None
+        self.gerar_atas_widget = None
+        self.setup_ui()
+        self.open_initial_page()
+
+    # ====== SETUP DA INTERFACE ======
+
+    def setup_ui(self):
+        """Configura a interface principal da aplicação."""
+        self.configure_window()
+        self.setup_central_widget()
+        self.setup_menu()
+        self.setup_content_area()
+
+    def configure_window(self):
+        """Configurações básicas da janela principal."""
+        self.setWindowTitle("Licitação 360")
+        self.setWindowIcon(self.icons["brasil"])
+        
+        # Posiciona a janela no canto superior esquerdo
+        screen_geometry = self.screen().geometry()
+        self.move(screen_geometry.left(), screen_geometry.top())
+        
+    def setup_central_widget(self):
+        """Define o widget central e layout principal."""
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        self.central_layout = QHBoxLayout(self.central_widget)
+        self.central_layout.setSpacing(0)
+        self.central_layout.setContentsMargins(0, 0, 0, 0)
+        
+    def setup_menu(self):
+        """Configura o menu lateral com botões de ícone que mudam de cor ao hover e adiciona tooltips personalizados."""
+        self.menu_layout = QVBoxLayout()
+        self.menu_layout.setSpacing(0)
+        self.menu_layout.setContentsMargins(0, 0, 0, 0)
+        self.menu_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        # Tooltip personalizado
+        self.tooltip_label = QLabel("", self)
+        self.tooltip_label.setStyleSheet("""
+            background-color: #13141F;
+            color: white;
+            border: 1px solid #8AB4F7;
+            padding: 4px;
+            border-radius: 4px;
+        """)
+        self.tooltip_label.setFont(QFont("Arial", 12))
+        self.tooltip_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.tooltip_label.setVisible(False)  # Inicialmente oculto
+
+        # Definindo os botões do menu e seus contextos
+        self.menu_buttons = [
+            ("api_azul", "api", "Atas (PDF)", self.show_atas),
+            ("ata", "ata_hover", "Atas (API)", self.show_atas_api),
+            ("statistics_azul", "statistics", "Indicadores", self.show_indicadores),                        
+            ("config", "config_hover", "Configurações", self.show_config),
+            ("init", "init_hover", "Sobre o Projeto", self.show_inicio),
+        ]
+
+        # Criando os botões e adicionando-os ao layout do menu
+        for icon_key, hover_icon_key, tooltip_text, callback in self.menu_buttons:
+            button = self.create_icon_button(icon_key, hover_icon_key, icon_key)
+            button.clicked.connect(callback)
+            button.installEventFilter(self)  # Instala um filtro de evento para gerenciar o tooltip
+            button.setProperty("tooltipText", tooltip_text)  # Define o texto do tooltip como propriedade
+            self.menu_layout.addWidget(button)
+            self.buttons[icon_key] = button 
+    
+        # Cria um widget para o menu e adiciona o layout
+        self.menu_widget = QWidget()
+        self.menu_widget.setLayout(self.menu_layout)
+        self.menu_widget.setStyleSheet("background-color: #13141F;")
+        self.central_layout.addWidget(self.menu_widget)        
+        
+    def show_tooltip_with_arrow(self, text, button):
+        self.tooltip_label.setText(text)
+        self.tooltip_label.move(button.x() + button.width(), button.y())
+        self.tooltip_label.setVisible(True)
+
+        # Posiciona a seta
+        self.tooltip_arrow.move(self.tooltip_label.x() - 10, self.tooltip_label.y() + (self.tooltip_label.height() // 2) - 10)
+        self.tooltip_arrow.setVisible(True)        
+
+    def hide_tooltip(self):
+        self.tooltip_label.setVisible(False)
+        self.tooltip_arrow.setVisible(False)
+            
+    def eventFilter(self, obj, event):
+        """Filtra eventos para exibir tooltips personalizados alinhados à direita dos botões do menu e gerenciar ícones."""
+        if isinstance(obj, QPushButton):
+            # Evento de entrada do mouse no botão
+            if event.type() == QEvent.Type.Enter and obj in self.buttons.values():
+                tooltip_text = obj.property("tooltipText")
+                if tooltip_text:
+                    self.tooltip_label.setText(tooltip_text)
+                    self.tooltip_label.adjustSize()
+
+                    # Posição do tooltip alinhada à direita do botão
+                    button_pos = obj.mapToGlobal(QPoint(obj.width(), 0))  # Posição global do botão
+                    tooltip_x = button_pos.x() + 5  # Ajuste para a direita do botão
+                    tooltip_y = button_pos.y() + (obj.height() - self.tooltip_label.height()) // 2  # Centraliza verticalmente
+                    self.tooltip_label.move(self.mapFromGlobal(QPoint(tooltip_x, tooltip_y)))  # Converte para coordenadas da janela
+                    self.tooltip_label.setVisible(True)
+
+                # Altera o ícone do botão para o estado de hover, se não estiver selecionado
+                if not obj.property("isSelected"):
+                    obj.setIcon(obj.hover_icon)
+
+            # Evento de saída do mouse do botão
+            elif event.type() == QEvent.Type.Leave and obj in self.buttons.values():
+                self.tooltip_label.setVisible(False)
+
+                # Retorna o ícone ao estado padrão, se não estiver selecionado
+                if not obj.property("isSelected"):
+                    obj.setIcon(obj.default_icon)
+
+            # Evento de clique no botão
+            elif event.type() == QEvent.Type.MouseButtonPress and obj in self.buttons.values():
+                # Desmarca todos os botões e reseta os ícones
+                for btn in self.buttons.values():
+                    btn.setProperty("isSelected", False)
+                    btn.setIcon(btn.default_icon)
+
+                # Marca o botão clicado como selecionado e altera o ícone
+                obj.setProperty("isSelected", True)
+                obj.setIcon(obj.selected_icon)
+
+        return super().eventFilter(obj, event)        
+    
+
+    def create_icon_button(self, icon_key, hover_icon_key, selected_icon_key):
+        button = QPushButton()
+        button.setIcon(self.icons[icon_key])  # Ícone padrão
+        button.setIconSize(QSize(30, 30))
+        button.setStyleSheet(get_menu_button_style())
+        button.setCursor(Qt.CursorShape.PointingHandCursor)
+        button.setFixedSize(50, 50)
+
+        # Armazena os ícones padrão, de hover e de seleção
+        button.default_icon = self.icons[icon_key]
+        button.hover_icon = self.icons[hover_icon_key]
+        button.selected_icon = self.icons[selected_icon_key]
+        button.icon_key = icon_key  # Armazena a chave do ícone
+
+        # Propriedade para gerenciar o estado selecionado
+        button.setProperty("isSelected", False)
+
+        # Instala o event filter para capturar eventos de hover e selected
+        button.installEventFilter(self)
+
+        return button
+
+    def set_active_button(self, button):
+        """Define o botão ativo e altera o ícone para o estado hover permanente."""
+        # Reseta o estilo do botão anteriormente ativo
+        if self.active_button and self.active_button != button:
+            self.active_button.setIcon(self.active_button.default_icon)
+            self.active_button.setStyleSheet(get_menu_button_style())
+
+        # Aplica o estilo de botão ativo
+        button.setIcon(button.hover_icon)
+        button.setStyleSheet(get_menu_button_activated_style())
+        self.active_button = button 
+    
+    def show_inicio(self):
+        self.clear_content_area()
+
+        self.inicio_widget = InicioWidget(self.icons)
+
+        self.content_layout.addWidget(self.inicio_widget)
+        # Define o botão "init" como o ativo (correspondente ao botão inicial)
+        self.set_active_button(self.buttons["init"])      
+
+    def show_atas(self):
+        self.clear_content_area()
+
+        # Criação de uma QLabel com o texto "Módulo Atas"
+        label = QLabel("Atas", self)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Alinhamento centralizado
+        label.setStyleSheet("""
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        """)  # Estilização opcional para a label
+        
+        # Adiciona a QLabel ao layout de conteúdo
+        self.content_layout.addWidget(label)
+        self.set_active_button(self.buttons["statistics_azul"])  # Define o botão "Atas (API)" como ativo
+
+
+    # def show_atas(self):
+    #     self.clear_content_area()
+
+    #     # Inicializa o modelo e o caminho do banco de dados para Atas
+    #     self.gerar_atas_model = GerarAtasModel(DATA_ATAS_PATH)
+
+    #     # Configura a visualização (View) e o controlador (Controller)
+    #     self.gerar_atas_view = GerarAtasView(
+    #         icons=self.icons,
+    #         model=self.gerar_atas_model.setup_model("controle_atas", editable=True),
+    #         database_path=DATA_ATAS_PATH,
+    #         parent=self
+    #     )
+    #     self.gerar_atas_controller = GerarAtasController(
+    #         icons=self.icons,
+    #         view=self.gerar_atas_view,
+    #         model=self.gerar_atas_model
+    #     )
+
+    #     # Adiciona a view de Atas à área de conteúdo
+    #     self.content_layout.addWidget(self.gerar_atas_view)
+
+    #     # Define o botão "ata" como ativo
+    #     self.set_active_button(self.buttons["ata"])
+
+
+    def show_atas_api(self):
+        self.clear_content_area()
+
+        # Criação de uma QLabel com o texto "Módulo Atas"
+        label = QLabel("Atas API", self)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Alinhamento centralizado
+        label.setStyleSheet("""
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        """)  # Estilização opcional para a label
+        
+        # Adiciona a QLabel ao layout de conteúdo
+        self.content_layout.addWidget(label)
+        self.set_active_button(self.buttons["statistics_azul"])  # Define o botão "Atas (API)" como ativo
+
+
+    # def show_atas_api(self):
+    #     self.clear_content_area()
+
+    #     # Inicializa o modelo e o caminho do banco de dados para Atas
+    #     self.gerar_atas_api_model = GerarAtasApiModel(DATA_ATAS_API_PATH)
+
+    #     # Configura a visualização (View) e o controlador (Controller)
+    #     self.gerar_atas_api_view = GerarAtasApiView(
+    #         icons=self.icons,
+    #         model=self.gerar_atas_api_model.setup_model("controle_atas", editable=True),
+    #         database_path=DATA_ATAS_API_PATH,
+    #         parent=self
+    #     )
+    #     self.gerar_atas_controller = GerarAtasApiController(
+    #         icons=self.icons,
+    #         view=self.gerar_atas_api_view,
+    #         model=self.gerar_atas_api_model
+    #     )
+
+    #     # Adiciona a view de Atas à área de conteúdo
+    #     self.content_layout.addWidget(self.gerar_atas_api_view)
+
+    #     # Define o botão "ata" como ativo
+    #     self.set_active_button(self.buttons["api_azul"])
+        
+    def show_indicadores(self):
+        self.clear_content_area()
+
+        # Criação de uma QLabel com o texto "Módulo Atas"
+        label = QLabel("Indicadores", self)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Alinhamento centralizado
+        label.setStyleSheet("""
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        """)  # Estilização opcional para a label
+        
+        # Adiciona a QLabel ao layout de conteúdo
+        self.content_layout.addWidget(label)
+        self.set_active_button(self.buttons["statistics_azul"])  # Define o botão "Atas (API)" como ativo
+
+    # def show_indicadores(self):
+    #     self.clear_content_area()
+
+    #     self.db_manager = DatabaseManager() 
+    #     # Instanciar a nova view
+    #     indicadores_view = IndicadoresView(
+    #         db_manager=self.db_manager,
+    #         data_atas_path=DATA_ATAS_PATH,
+    #         data_atas_api_path=DATA_ATAS_API_PATH,
+    #         parent=self
+    #     )
+
+    #     # Adicionar a view ao layout de conteúdo
+    #     self.content_layout.addWidget(indicadores_view)
+
+    #     # Define o botão correspondente como ativo
+    #     self.set_active_button(self.buttons["statistics_azul"])

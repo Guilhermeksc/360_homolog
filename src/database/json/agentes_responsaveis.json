@@ -1,0 +1,62 @@
+{
+    "ordenador_de_despesa": [
+        {
+            "Nome": "THIAGO MARTINS",
+            "Posto": "Capitão de Fragata (IM)",
+            "Abreviacao": "CF",
+            "Funcao": "Ordenador de Despesa Substituto"
+        },
+        {
+            "Nome": "BRUNO MOREIRA",
+            "Posto": "Capitão de Fragata (IM)",
+            "Abreviacao": "CF",
+            "Funcao": "Ordenador de Despesa"
+        }
+    ],
+    "agente_fiscal": [
+        {
+            "Nome": "TESTE",
+            "Posto": "Capitão de Fragata (IM)",
+            "Abreviacao": "CF (IM)",
+            "Funcao": "Agente Fiscal"
+        },
+        {
+            "Nome": "GUILHERME KIRSCHNER",
+            "Posto": "Capitão de Corveta (IM)",
+            "Abreviacao": "CC (IM)",
+            "Funcao": "Agente Fiscal Substituto"
+        }
+    ],
+    "gerente_de_crédito": [
+        {
+            "Nome": "TESTE",
+            "Posto": "Segundo-Tenente",
+            "Abreviacao": "2ºTEN",
+            "Funcao": "Gerente de Crédito"
+        }
+    ],
+    "operador_da_contratação": [
+        {
+            "Nome": "TESTE",
+            "Posto": "Primeiro-Tenente",
+            "Abreviacao": "1ºTEN",
+            "Funcao": "Operador da Contratação"
+        }
+    ],
+    "pregoeiro": [
+        {
+            "Nome": "TEST",
+            "Posto": "Primeiro-Tenente",
+            "Abreviacao": "1ºTEN",
+            "Funcao": "Pregoeiro"
+        }
+    ],
+    "responsável_pela_demanda": [
+        {
+            "Nome": "TETES",
+            "Posto": "Primeiro-Tenente",
+            "Abreviacao": "1ºTEN",
+            "Funcao": "Responsável pela Demanda"
+        }
+    ]
+}
