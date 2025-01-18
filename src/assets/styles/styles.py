@@ -31,7 +31,7 @@ def get_menu_button_activated_style():
             font-size: 16px;
             text-align: left;
             border: 1px solid #181928;
-            border-left: 2px solid #8E4B79;
+            border-left: 2px solid #F3F3F3;
             border-radius: 0px;
             padding: 5px;
             margin: 0px; 

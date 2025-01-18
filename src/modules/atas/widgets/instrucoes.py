@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from PyQt6.QtCore import Qt
-from src.modules.utils.linha_layout import linha_divisoria_layout, linha_divisoria_sem_spacer_layout
+from modules.utils.linha_layout import linha_divisoria_layout, linha_divisoria_sem_spacer_layout
 class InstructionWidget(QWidget):
     def __init__(self, icons, parent=None):
         super().__init__(parent)

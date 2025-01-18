@@ -14,7 +14,7 @@ class MainWindow(QMainWindow):
         self.icons = load_icons()
         self.buttons = {}
         self.active_button = None
-        self.gerar_atas_widget = None
+        self.inicio_widget = None
         self.setup_ui()
         self.open_initial_page()
 
@@ -66,11 +66,11 @@ class MainWindow(QMainWindow):
 
         # Definindo os botões do menu e seus contextos
         self.menu_buttons = [
-            ("api_azul", "api", "Atas (PDF)", self.show_atas),
-            ("ata", "ata_hover", "Atas (API)", self.show_atas_api),
+            ("init", "init_hover", "Sobre o Projeto", self.show_inicio),
+            ("pdf_button_blue", "pdf_button", "Atas (PDF)", self.show_atas),
+            ("api_azul", "api", "Atas (API)", self.show_atas_api),
             ("statistics_azul", "statistics", "Indicadores", self.show_indicadores),                        
             ("config", "config_hover", "Configurações", self.show_config),
-            ("init", "init_hover", "Sobre o Projeto", self.show_inicio),
         ]
 
         # Criando os botões e adicionando-os ao layout do menu
@@ -177,15 +177,7 @@ class MainWindow(QMainWindow):
         button.setIcon(button.hover_icon)
         button.setStyleSheet(get_menu_button_activated_style())
         self.active_button = button 
-    
-    def show_inicio(self):
-        self.clear_content_area()
 
-        self.inicio_widget = InicioWidget(self.icons)
-
-        self.content_layout.addWidget(self.inicio_widget)
-        # Define o botão "init" como o ativo (correspondente ao botão inicial)
-        self.set_active_button(self.buttons["init"])      
 
     def show_atas(self):
         self.clear_content_area()
@@ -201,33 +193,33 @@ class MainWindow(QMainWindow):
         
         # Adiciona a QLabel ao layout de conteúdo
         self.content_layout.addWidget(label)
-        self.set_active_button(self.buttons["statistics_azul"])  # Define o botão "Atas (API)" como ativo
+        self.set_active_button(self.buttons["pdf_button_blue"])  # Define o botão "Atas (API)" como ativo
 
 
-    # def show_atas(self):
-    #     self.clear_content_area()
+    def show_atas(self):
+        self.clear_content_area()
 
-    #     # Inicializa o modelo e o caminho do banco de dados para Atas
-    #     self.gerar_atas_model = GerarAtasModel(DATA_ATAS_PATH)
+        # Inicializa o modelo e o caminho do banco de dados para Atas
+        self.gerar_atas_model = GerarAtasModel(DATA_ATAS_PATH)
 
-    #     # Configura a visualização (View) e o controlador (Controller)
-    #     self.gerar_atas_view = GerarAtasView(
-    #         icons=self.icons,
-    #         model=self.gerar_atas_model.setup_model("controle_atas", editable=True),
-    #         database_path=DATA_ATAS_PATH,
-    #         parent=self
-    #     )
-    #     self.gerar_atas_controller = GerarAtasController(
-    #         icons=self.icons,
-    #         view=self.gerar_atas_view,
-    #         model=self.gerar_atas_model
-    #     )
+        # Configura a visualização (View) e o controlador (Controller)
+        self.gerar_atas_view = GerarAtasView(
+            icons=self.icons,
+            model=self.gerar_atas_model.setup_model("controle_atas", editable=True),
+            database_path=DATA_ATAS_PATH,
+            parent=self
+        )
+        self.gerar_atas_controller = GerarAtasController(
+            icons=self.icons,
+            view=self.gerar_atas_view,
+            model=self.gerar_atas_model
+        )
 
-    #     # Adiciona a view de Atas à área de conteúdo
-    #     self.content_layout.addWidget(self.gerar_atas_view)
+        # Adiciona a view de Atas à área de conteúdo
+        self.content_layout.addWidget(self.gerar_atas_view)
 
-    #     # Define o botão "ata" como ativo
-    #     self.set_active_button(self.buttons["ata"])
+        # Define o botão "ata" como ativo
+        self.set_active_button(self.buttons["pdf_button_blue"])
 
 
     def show_atas_api(self):
@@ -244,7 +236,7 @@ class MainWindow(QMainWindow):
         
         # Adiciona a QLabel ao layout de conteúdo
         self.content_layout.addWidget(label)
-        self.set_active_button(self.buttons["statistics_azul"])  # Define o botão "Atas (API)" como ativo
+        self.set_active_button(self.buttons["api_azul"])  # Define o botão "Atas (API)" como ativo
 
 
     # def show_atas_api(self):
@@ -305,3 +297,86 @@ class MainWindow(QMainWindow):
 
     #     # Define o botão correspondente como ativo
     #     self.set_active_button(self.buttons["statistics_azul"])
+    
+    def show_config(self):
+        self.clear_content_area()
+
+        # Criação de uma QLabel com o texto "Módulo Atas"
+        label = QLabel("Config", self)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Alinhamento centralizado
+        label.setStyleSheet("""
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        """)  # Estilização opcional para a label
+        
+        # Adiciona a QLabel ao layout de conteúdo
+        self.content_layout.addWidget(label)
+        self.set_active_button(self.buttons["config"])  # Define o botão "Atas (API)" como ativo    
+
+    def show_inicio(self):
+        self.clear_content_area()
+
+        self.inicio_widget = InicioWidget(self.icons)
+
+        self.content_layout.addWidget(self.inicio_widget)
+        # Define o botão "init" como o ativo (correspondente ao botão inicial)
+        self.set_active_button(self.buttons["init"])    
+        
+    def open_initial_page(self):
+        """Abre a página inicial da aplicação."""
+        self.clear_content_area()
+
+        # Verifica se gerar_atas_widget já foi criado, caso contrário, chama show_atas
+        if not self.inicio_widget :
+            self.show_inicio()
+        else:
+            self.content_layout.addWidget(self.inicio_widget )
+
+        # Define o botão "ata" como ativo
+        self.set_active_button(self.buttons["init"])    
+        
+        
+    # ====== ÁREA DE CONTEÚDO ======
+
+    def setup_content_area(self):
+        """Configura a área principal para exibição do conteúdo."""
+        self.content_layout = QVBoxLayout()
+        self.content_layout.setSpacing(0)
+        self.content_layout.setContentsMargins(0, 0, 0, 0)
+        self.content_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.content_image_label = QLabel(self.central_widget)
+        self.content_image_label.hide()
+        self.content_layout.addWidget(self.content_image_label)
+
+        self.content_widget = QWidget()
+        self.content_widget.setLayout(self.content_layout)
+        self.content_widget.setMinimumSize(1050, 700)
+        self.central_layout.addWidget(self.content_widget)
+
+    def clear_content_area(self, keep_image_label=False):
+        """Remove todos os widgets da área de conteúdo, exceto a imagem opcional."""
+        for i in reversed(range(self.content_layout.count())):
+            widget = self.content_layout.itemAt(i).widget()
+            if widget and (widget is not self.content_image_label or not keep_image_label):
+                widget.setParent(None)
+                        
+
+    # ====== EVENTO DE FECHAMENTO DA JANELA ======
+
+    def closeEvent(self, event):
+        """Solicita confirmação ao usuário antes de fechar a janela."""
+        reply = QMessageBox.question(
+            self, 'Confirmar Saída', "Você realmente deseja fechar o aplicativo?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+        event.accept() if reply == QMessageBox.StandardButton.Yes else event.ignore()
+                    
+if __name__ == "__main__":
+    import sys
+
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())

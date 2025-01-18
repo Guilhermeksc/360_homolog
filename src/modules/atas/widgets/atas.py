@@ -12,13 +12,13 @@ from openpyxl import Workbook, load_workbook
 from docx.oxml.ns import nsdecls
 from docx.oxml import parse_xml
 from openpyxl.styles import Font, PatternFill
-from src.config.paths import PRE_DEFINICOES_JSON, TEMPLATE_PATH, ORGANIZACOES_FILE, AGENTES_RESPONSAVEIS_FILE
+from paths import PRE_DEFINICOES_JSON, TEMPLATE_PATH, ORGANIZACOES_FILE, AGENTES_RESPONSAVEIS_FILE
 import json
-from src.modules.utils.add_button import add_button_func_vermelho
+from modules.utils.add_button import add_button_func_vermelho
 import os
 from PyQt6.QtSql import QSqlQuery
 
-from src.modules.utils.linha_layout import linha_divisoria_layout
+from modules.utils.linha_layout import linha_divisoria_layout
 
 DEFAULT_CONFIG = {
     "ultimo_cnpj": "0005055505050",
@@ -970,138 +970,3 @@ def move_table_after_paragraph(paragraph, table):
     # Move a tabela para ficar logo após o parágrafo atual
     tbl, p = table._tbl, paragraph._element
     p.addnext(tbl)
-
-class EditPredefinicoesDialog(QDialog):
-    def __init__(self, categoria, config_data, parent=None):
-        super().__init__(parent)
-        self.categoria = categoria
-        self.config_data = config_data
-        self.setWindowTitle(f"Editar {categoria.capitalize()}")
-
-        layout = QVBoxLayout(self)
-        self.list_widget = QListWidget()
-        self.list_widget.addItems(config_data[categoria])
-        layout.addWidget(self.list_widget)
-
-        if categoria == "ordenador_despesas":
-            # Campo Nome (com caixa alta)
-            self.nome_input = QLineEdit()
-            self.nome_input.setPlaceholderText("Nome")
-            self.nome_input.textChanged.connect(self.forcar_caixa_alta)
-            layout.addWidget(self.nome_input)
-            
-            # Campo Posto (QComboBox com opções predefinidas e entrada personalizada)
-            self.posto_input = QComboBox()
-            self.posto_input.setEditable(True)  # Permite entrada personalizada
-            self.posto_input.addItems([
-                "Capitão de Mar e Guerra (IM)",
-                "Capitão de Fragata (IM)",
-                "Capitão de Corveta (IM)"
-            ])
-            self.posto_input.setPlaceholderText("Selecione ou digite o posto")
-            layout.addWidget(self.posto_input)
-            
-            # Checkboxes para tipo de ordenador com exclusividade
-            self.checkbox_ordenador = QCheckBox("Ordenador de Despesa")
-            self.checkbox_substituto = QCheckBox("Ordenador de Despesa Substituto")
-            layout.addWidget(self.checkbox_ordenador)
-            layout.addWidget(self.checkbox_substituto)
-
-            # Conectar os checkboxes para que apenas um seja selecionado de cada vez
-            self.checkbox_ordenador.stateChanged.connect(self.desmarcar_substituto)
-            self.checkbox_substituto.stateChanged.connect(self.desmarcar_ordenador)
-
-            # Conectar o clique no item da lista ao preenchimento dos campos
-            self.list_widget.itemClicked.connect(self.preencher_campos)
-
-        else:
-            # Campo de entrada genérico para outras categorias
-            self.input_edit = QLineEdit()
-            layout.addWidget(self.input_edit)
-
-        # Botões para adicionar e remover itens
-        add_btn = QPushButton("Adicionar")
-        add_btn.clicked.connect(self.adicionar_item)
-        layout.addWidget(add_btn)
-
-        remove_btn = QPushButton("Remover")
-        remove_btn.clicked.connect(self.remover_item)
-        layout.addWidget(remove_btn)
-
-        save_btn = QPushButton("Salvar")
-        save_btn.clicked.connect(self.salvar_e_fechar)
-        layout.addWidget(save_btn)
-
-    def forcar_caixa_alta(self):
-        """Garante que o nome seja sempre em caixa alta."""
-        self.nome_input.setText(self.nome_input.text().upper())
-
-    def desmarcar_substituto(self):
-        """Desmarca 'Ordenador de Despesa Substituto' se 'Ordenador de Despesa' for selecionado."""
-        if self.checkbox_ordenador.isChecked():
-            self.checkbox_substituto.setChecked(False)
-
-    def desmarcar_ordenador(self):
-        """Desmarca 'Ordenador de Despesa' se 'Ordenador de Despesa Substituto' for selecionado."""
-        if self.checkbox_substituto.isChecked():
-            self.checkbox_ordenador.setChecked(False)
-
-    def preencher_campos(self, item):
-        """Preenche os campos editáveis com os valores do item selecionado."""
-        # Extrair nome, posto e tipo de ordenador do item selecionado
-        partes = item.text().split("\n")
-        
-        if len(partes) >= 2:
-            nome = partes[0].strip()
-            posto = partes[1].strip()
-            tipo_ordenador = partes[2].strip() if len(partes) > 2 else ""
-
-            # Preenche os campos com os valores extraídos
-            self.nome_input.setText(nome)
-            self.posto_input.setCurrentText(posto)
-
-            # Seleciona o checkbox apropriado
-            if tipo_ordenador == "Ordenador de Despesa":
-                self.checkbox_ordenador.setChecked(True)
-            elif tipo_ordenador == "Ordenador de Despesa Substituto":
-                self.checkbox_substituto.setChecked(True)
-
-    def adicionar_item(self):
-        # Lógica para 'ordenador_despesas' com campos de nome e posto
-        if self.categoria == "ordenador_despesas":
-            nome = self.nome_input.text()
-            posto = self.posto_input.currentText()
-            if self.checkbox_ordenador.isChecked():
-                tipo_ordenador = "Ordenador de Despesa"
-            elif self.checkbox_substituto.isChecked():
-                tipo_ordenador = "Ordenador de Despesa Substituto"
-            else:
-                QMessageBox.warning(self, "Aviso", "Selecione o tipo de ordenador.")
-                return
-
-            # Formatar o texto final para o combobox
-            item_text = f"{nome} \n {posto} \n {tipo_ordenador}"
-            self.list_widget.addItem(item_text)
-
-            # Limpar campos após adicionar
-            self.nome_input.clear()
-            self.posto_input.setCurrentIndex(-1)  # Desmarca a seleção
-            self.checkbox_ordenador.setChecked(False)
-            self.checkbox_substituto.setChecked(False)
-
-        else:
-            # Adicionar item para categorias normais
-            item_text = self.input_edit.text()
-            self.list_widget.addItem(item_text)
-            self.input_edit.clear()
-
-    def remover_item(self):
-        selected_item = self.list_widget.currentItem()
-        if selected_item:
-            self.list_widget.takeItem(self.list_widget.row(selected_item))
-
-    def salvar_e_fechar(self):
-        # Salvar todos os itens na configuração JSON
-        items = [self.list_widget.item(i).text() for i in range(self.list_widget.count())]
-        self.config_data[self.categoria] = items
-        self.accept()

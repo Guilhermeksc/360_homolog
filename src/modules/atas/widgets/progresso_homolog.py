@@ -6,9 +6,9 @@ import re
 import time
 import pandas as pd
 from pathlib import Path
-from src.modules.atas_novo.widgets.worker_homologacao import Worker, TreeViewWindow, WorkerSICAF, extrair_dados_sicaf
+from modules.atas.widgets.worker_homologacao import Worker, TreeViewWindow, WorkerSICAF, extrair_dados_sicaf
 import logging
-from src.modules.utils.add_button import add_button_func, add_button_func_vermelho
+from modules.utils.add_button import add_button_func, add_button_func_vermelho
 
 class ConclusaoDialog(QDialog):
     def __init__(self, parent=None):

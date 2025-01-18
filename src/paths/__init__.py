@@ -2,8 +2,9 @@
 
 # Importando diretamente os objetos ou funções de cada módulo interno
 from .base_path import BASE_DIR, CONFIG_FILE, DATABASE_DIR, MODULES_DIR, JSON_DIR, SQL_DIR, ASSETS_DIR, TEMPLATE_DIR, STYLE_PATH, ICONS_DIR
-from .atas_path import *  # Importe as funções e constantes definidas em atas_path.py
-from .atas_api_path import *  # Importe as funções e constantes definidas em atas_api_path.py
+from .atas_path import CONTROLE_DADOS_ATA, TEMPLATE_PATH, DATA_ATAS_PATH
+from .atas_api_path import CONFIG_API_FILE
+from .config_path import PRE_DEFINICOES_JSON, ORGANIZACOES_FILE, AGENTES_RESPONSAVEIS_FILE, PDF_DIR
 
 # Definindo __all__ para controle explícito do que será exportado
 __all__ = [
@@ -12,8 +13,11 @@ __all__ = [
     "ASSETS_DIR", "TEMPLATE_DIR", "STYLE_PATH", "ICONS_DIR",
     
     # atas_path
-    # Inclua os nomes específicos de funções/constantes de atas_path.py aqui,
+    "CONTROLE_DADOS_ATA", "TEMPLATE_PATH", "DATA_ATAS_PATH",
     
     # atas_api_path
-    # Inclua os nomes específicos de funções/constantes de atas_api_path.py aqui
-]
+    "CONFIG_API_FILE",
+    
+    # config_path
+    "PRE_DEFINICOES_JSON", "ORGANIZACOES_FILE", "AGENTES_RESPONSAVEIS_FILE", "PDF_DIR",
+    ]

@@ -6,10 +6,10 @@ import re
 import time
 import pandas as pd
 from pathlib import Path
-from src.modules.atas_novo.widgets.worker_homologacao import TreeViewWindow, WorkerSICAF
+from modules.atas.widgets.worker_homologacao import TreeViewWindow, WorkerSICAF
 import logging
-from src.modules.utils.add_button import add_button_func_vermelho, add_button_copy, add_button_func
-from src.modules.utils.linha_layout import linha_divisoria_layout
+from modules.utils.add_button import add_button_func_vermelho, add_button_copy, add_button_func
+from modules.utils.linha_layout import linha_divisoria_layout
 
 class RegistroSICAFDialog(QWidget):
     def __init__(self, pdf_dir, model, icons, database_ata_manager, main_window, parent=None):

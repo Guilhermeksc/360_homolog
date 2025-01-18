@@ -4,8 +4,8 @@ from PyQt6.QtCore import Qt
 import pandas as pd
 import os
 import locale
-from src.modules.utils.add_button import add_button_func
-from src.modules.utils.linha_layout import linha_divisoria_layout
+from modules.utils.add_button import add_button_func
+from modules.utils.linha_layout import linha_divisoria_layout
 
 # Configurar o locale para formato brasileiro
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')

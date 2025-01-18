@@ -5,10 +5,10 @@ import json
 import requests
 import time
 from pathlib import Path
-from src.modules.atas_novo.widgets.progresso_homolog import TreeViewWindow
-from src.config.paths import CONFIG_API_FILE
-from src.modules.utils.add_button import add_button_func_vermelho
-from src.modules.utils.linha_layout import linha_divisoria_layout
+from modules.atas.widgets.progresso_homolog import TreeViewWindow
+from paths import CONFIG_API_FILE
+from modules.utils.add_button import add_button_func_vermelho
+from modules.utils.linha_layout import linha_divisoria_layout
 
 class PNCPConsultaThread(QThread):
     consulta_concluida = pyqtSignal(list, list)

@@ -1,4 +1,4 @@
-from src.modules.atas_novo.database_manager.db_manager import DatabaseATASManager
+from modules.atas.database import DatabaseATASManager
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *

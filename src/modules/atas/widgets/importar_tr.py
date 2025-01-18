@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
-from src.modules.utils.add_button import add_button
+from modules.utils.add_button import add_button
 class TermoReferenciaWidget(QWidget): 
     abrirTabelaNova = pyqtSignal()
     carregarTabela = pyqtSignal()  

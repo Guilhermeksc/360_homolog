@@ -3,12 +3,12 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from modules.utils.add_button import add_button_func
 from modules.utils.linha_layout import linha_divisoria_sem_spacer_layout
-from .edit_agentes_responsaveis import EditPredefinicoesDialog
+from .config_Responsaveis.edit_responsaveis import EditPredefinicoesDialog
 from paths import *
 import json
 from functools import partial
-from .config_OM.configOM import show_organizacoes_widget
-from .config_setores.configSetores import show_setores_requisitantes_widget
+from .config_OM.edit_OM import show_organizacoes_widget
+from .config_Setores.edit_Setores import show_setores_widget
 
 class ConfigManager(QWidget):
     def __init__(self, icons, parent=None):
@@ -216,7 +216,7 @@ class ConfigManager(QWidget):
         show_organizacoes_widget(self.content_layout, self.icons, self)
 
     def show_setores_requisitantes_widget(self):
-        show_setores_requisitantes_widget(self.content_layout, self.icons, self)
+        show_setores_widget(self.content_layout, self.icons, self)
         
         # self.clear_content()
         # layout = QVBoxLayout()
