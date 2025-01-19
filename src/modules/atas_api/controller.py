@@ -1,24 +1,23 @@
 from PyQt6.QtCore import *
 from paths import CONTROLE_DADOS_ATA
 
-class GerarAtasController(QObject): 
+class GerarAtasApiController(QObject): 
     def __init__(self, icons, view, model):
         super().__init__()
         self.icons = icons
         self.view = view
-        self.model = model.setup_model("controle_atas")
+        self.model = model.setup_model("controle_atas_api")
         self.controle_om = CONTROLE_DADOS_ATA  # Atribui o caminho diretamente ao controle_om                
         self.setup_connections()
 
     def setup_connections(self):
         # Conecta os sinais da view aos métodos do controlador
-        # self.view.instrucoesSignal.connect(self.instrucoes)
+        self.view.instructionSignal.connect(self.instrucoes)
         self.view.trSignal.connect(self.termo_referencia) 
         self.view.homologSignal.connect(self.termo_homologacao) 
         self.view.sicafSignal.connect(self.sicaf_widget) 
         self.view.apiSignal.connect(self.api_consulta) 
         self.view.atasSignal.connect(self.gerar_atas)
-        self.view.indicadoresSignal.connect(self.indicadores) 
 
         # Configura os botões usando GerarAtasModel
         self.view.tr_widget.abrirTabelaNova.connect(self.abrir_tabela_nova)

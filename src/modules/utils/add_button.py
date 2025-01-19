@@ -124,7 +124,7 @@ def add_button_func_vermelho(text, slot, layout, tooltip=None, button_size=None)
     return button
 
 
-def add_button_result(label, icon_name, signal, layout, icons=None, tooltip=None, additional_click_action=None):
+def add_button_result(label, icon_name, signal, layout, icons=None, tooltip=None, additional_click_action=None, button_size=None):
     button = QPushButton(label)
     
     # Verifica se icons não é None antes de tentar obter o ícone
@@ -140,6 +140,10 @@ def add_button_result(label, icon_name, signal, layout, icons=None, tooltip=None
     if additional_click_action:
         button.clicked.connect(additional_click_action)
 
+    # Define o tamanho do botão, se especificado
+    if button_size:
+        button.setFixedSize(QSize(*button_size))
+    
     # Estilo do botão
     button.setStyleSheet(f"""
         QPushButton {{

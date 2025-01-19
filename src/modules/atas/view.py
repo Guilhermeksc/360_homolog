@@ -6,7 +6,6 @@ from modules.atas.widgets.importar_tr import TermoReferenciaWidget
 from modules.atas.widgets.instrucoes import InstructionWidget
 from modules.atas.widgets.progresso_homolog import ProcessamentoWidget
 from modules.atas.widgets.sicaf import RegistroSICAFDialog
-from modules.atas.widgets.consultar_api import ConsultarAPI
 from modules.atas.widgets.indicadores import IndicadoresWidget
 from modules.atas.widgets.atas import GerarAtaWidget
 from pathlib import Path
@@ -39,8 +38,7 @@ class GerarAtasView(QMainWindow):
 
         # Título da interface
         label_ata = QLabel("Atas de Registro de Preços (Extração dos PDF)", self)
-        label_ata.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label_ata.setStyleSheet("font-size: 30px; font-weight: bold;")
+        label_ata.setStyleSheet("font-size: 26px; font-weight: bold;")
         self.main_layout.addWidget(label_ata)
 
         # Adiciona menu e conteúdo
@@ -83,25 +81,11 @@ class GerarAtasView(QMainWindow):
         )
         self.content_area.addWidget(self.sicaf_widget)
 
-        self.api_widget = ConsultarAPI(
-            icons=self.icons, 
-            database_ata_manager=self.database_ata_manager, 
-            main_window=self
-            )  
-        self.content_area.addWidget(self.api_widget)
-
         self.atas_widget = GerarAtaWidget(
             icons=self.icons, 
             database_ata_manager=self.database_ata_manager, 
             main_window=self)
         self.content_area.addWidget(self.atas_widget)
-
-        self.indicadores_widget = IndicadoresWidget(
-            icons=self.icons, 
-            database_ata_manager=self.database_ata_manager, 
-            main_window=self)
-        self.content_area.addWidget(self.indicadores_widget)
-
 
     def show_initial_content(self):
         # Define o widget inicial como ativo
@@ -152,8 +136,6 @@ class GerarAtasView(QMainWindow):
         table_view.setColumnWidth(2, 70)
         table_view.setColumnWidth(3, 200)
         table_view.horizontalHeader().setStretchLastSection(True)
-
-
 
     def on_pdf_dir_changed(self, new_pdf_dir):
         # Lida com a mudança do diretório PDF, se necessário

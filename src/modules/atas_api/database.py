@@ -367,27 +367,29 @@ class DatabaseATASAPIManager:
             "srp": data_informacoes.get("srp")
         }
 
+        # Carregar dados da tabela controle_atas_api
+        controle_atas_api = self.execute_query("SELECT item, catalogo FROM controle_atas_api WHERE catalogo IS NOT NULL")
+        controle_atas_dict = {row[0]: row[1] for row in controle_atas_api}
+
+        # Para cada item em resultados_completos, insere ou atualiza os dados no banco de dados
         for item in resultados_completos:
             numero_item = item.get("numeroItem")
 
             # Verifica se existe um valor de catalogo no controle_atas_dict
             catalogo = controle_atas_dict.get(numero_item)
 
-            print(f"Catalogo: {catalogo}")
-            
             quantidade = item.get("quantidadeHomologada", 0) or 0
             valor_estimado = item.get("valorUnitarioEstimado", 0) or 0
             valor_homologado_item_unitario = item.get("valorUnitarioHomologado")
 
-            # Cálculos necessários
             if valor_estimado and valor_homologado_item_unitario is not None:
                 percentual_desconto = (
                     ((valor_estimado - valor_homologado_item_unitario) / valor_estimado * 100)
                     if valor_estimado else None
                 )
             else:
-                percentual_desconto = None  # Define como NULL se não houver valor homologado
-
+                percentual_desconto = None
+                
             valor_homologado_total_item = quantidade * (valor_homologado_item_unitario or 0)
             valor_estimado_total_do_item = quantidade * valor_estimado
 
@@ -416,20 +418,20 @@ class DatabaseATASAPIManager:
             # Combina dados específicos do item com as informações gerais e os cálculos
             data_to_insert = {
                 "item": numero_item,
-                "catalogo": catalogo,  # Valor sincronizado
+                "catalogo": catalogo,
                 "descricao": item.get("descricao"),
                 "descricao_detalhada": item.get("descricao"),
                 "unidade": item.get("unidadeMedida"),
-                "quantidade": quantidade,
-                "valor_estimado": valor_estimado,
-                "valor_homologado_item_unitario": valor_homologado_item_unitario,
+                "quantidade": item.get("quantidadeHomologada", 0) or 0,
+                "valor_estimado": item.get("valorUnitarioEstimado", 0) or 0,
+                "valor_homologado_item_unitario": item.get("valorUnitarioHomologado"),
                 "percentual_desconto": percentual_desconto,
                 "valor_homologado_total_item": valor_homologado_total_item,
                 "valor_estimado_total_do_item": valor_estimado_total_do_item,
-                "situacao": situacao,  # Adiciona o valor convertido de `situacao`
+                "situacao": 'Adjudicado e Homologado' if item.get("temResultado") == 1 else 'Fracassado/Deserto/Cancelado ou Anulado',
                 "cnpj": cnpj,  # Usa o valor formatado
                 "empresa": item.get("nomeRazaoSocialFornecedor"),
-                **data_informacoes_to_insert  # Adiciona as informações de `data_informacoes`
+                **data_informacoes_to_insert  # Adiciona as informações de data_informacoes
             }
 
             # SQL para inserção
@@ -437,7 +439,3 @@ class DatabaseATASAPIManager:
             columns = ", ".join(data_to_insert.keys())
             insert_query = f"INSERT OR REPLACE INTO '{table_name}' ({columns}) VALUES ({placeholders})"
             self.execute_update(insert_query, tuple(data_to_insert.values()))
-            
-            
-            
-            

@@ -5,8 +5,8 @@ import json
 import requests
 import time
 from pathlib import Path
-from modules.atas.widgets.progresso_homolog import TreeViewWindow
-from paths.base_paths import CONFIG_API_FILE
+from modules.atas_api.widgets.progresso_homolog import TreeViewWindow
+from paths import CONFIG_API_FILE
 from modules.utils.add_button import add_button_func_vermelho
 from modules.utils.linha_layout import linha_divisoria_layout
 
@@ -31,14 +31,23 @@ class PNCPConsultaThread(QThread):
                 data_informacoes.get("anoCompra"),
                 data_informacoes["unidadeOrgao"].get("codigoUnidade")
             )
-            # self.salvar_json(resultados_completos)
+            
+            # Carregar dados da tabela controle_atas_api
+            controle_atas_api = self.db_manager.execute_query(
+                "SELECT item, catalogo FROM controle_atas_api WHERE catalogo IS NOT NULL"
+            )
+            controle_atas_dict = {row[0]: row[1] for row in controle_atas_api}
+
+            # Popular o banco com os resultados e o controle_atas_dict
             self.homologacao_dataframe = self.db_manager.popular_db_consulta_itens_api(
                 resultados_completos, 
                 data_informacoes,
                 data_informacoes.get("numeroCompra"),
                 data_informacoes.get("anoCompra"),
-                data_informacoes["unidadeOrgao"].get("codigoUnidade")
+                data_informacoes["unidadeOrgao"].get("codigoUnidade"),
+                controle_atas_dict  # Passa o dicionário de controle_atas_api
             )
+            
             self.consulta_concluida.emit(data_informacoes_lista, resultados_completos)
         except Exception as e:
             self.erro_consulta.emit(str(e))
@@ -187,7 +196,7 @@ class ConsultarAPI(QWidget):
         try:
             with open(CONFIG_API_FILE, 'w', encoding='utf-8') as file:
                 json.dump(self.config_data, file, ensure_ascii=False, indent=4)
-            QMessageBox.information(self, "Informação", "Configurações salvas com sucesso.")
+            # QMessageBox.information(self, "Informação", "Configurações salvas com sucesso.")
         except Exception as e:
             QMessageBox.critical(self, "Erro", f"Erro ao salvar configurações: {e}")
 
@@ -236,19 +245,16 @@ class ConsultarAPI(QWidget):
         layout.addWidget(linha_divisoria1)
         layout.addSpacerItem(spacer_baixo_linha1)   
 
-        # Botão "Consultar PNCP"
-        button_layout = QHBoxLayout()
-        button_layout.addStretch()  # Espaço flexível à esquerda
-        add_button_func_vermelho("Consultar PNCP", "api", self.iniciar_consulta, button_layout, self.icons, "Clique para consultar o sequencial da contratação no PNCP", button_size=(300, 40))  
-        button_layout.addStretch()  # Espaço flexível à direita
-        layout.addLayout(button_layout)
-
         # Área de progresso
         self.progress_api_area = QTextEdit()
         self.progress_api_area.setReadOnly(True)
         layout.addWidget(self.progress_api_area)
-
+        
+        # Botão "Consultar PNCP"
         button_layout = QHBoxLayout()
+        button_layout.addStretch()  # Espaço flexível à esquerda
+        add_button_func_vermelho("Consultar PNCP", self.iniciar_consulta, button_layout, "Clique para consultar o sequencial da contratação no PNCP", button_size=(300, 40))  
+        button_layout.addStretch()  # Espaço flexível à direita
         layout.addLayout(button_layout)
 
         self.setLayout(layout)
@@ -273,8 +279,10 @@ class ConsultarAPI(QWidget):
 
         self.progress_api_area.clear()
         self.progress_api_area.append("Iniciando consulta ao PNCP...")
+        
         # Salvar os valores atuais no JSON
         self.salvar_configuracoes()
+        
         # Iniciar a thread de consulta
         self.thread = PNCPConsultaThread(cnpj, ano, sequencial, self.db_manager)
         self.thread.consulta_concluida.connect(self.consulta_concluida)
@@ -301,7 +309,6 @@ class ConsultarAPI(QWidget):
             data_informacoes_lista[0]["unidadeOrgao"].get("codigoUnidade"),
             controle_atas_dict  # Passa o dicionário de controle_atas_api para popular_db_consulta_itens_api
         )
-
         
     def atualizar_progresso(self, mensagem):
         self.progress_api_area.append(mensagem)

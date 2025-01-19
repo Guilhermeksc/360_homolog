@@ -1,4 +1,4 @@
-from modules.atas.database import DatabaseATASManager
+from modules.atas_api.database import DatabaseATASAPIManager
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
@@ -7,12 +7,12 @@ import pandas as pd
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 import logging  
 import sqlite3
-class GerarAtasModel(QObject):
+class GerarAtasApiModel(QObject):
     tabelaCarregada = pyqtSignal() 
 
     def __init__(self, database_path, parent=None):
         super().__init__(parent)
-        self.database_ata_manager = DatabaseATASManager(database_path)
+        self.database_ata_manager = DatabaseATASAPIManager(database_path)
         self.db = None  # Adiciona um atributo para o banco de dados
         self.model = None  # Atributo para o modelo SQL
         self.init_database()  # Inicializa a conexão e a estrutura do banco de dados
@@ -47,7 +47,7 @@ class GerarAtasModel(QObject):
         """Cria a tabela 'controle_dispensas' com a estrutura definida, caso ainda não exista."""
         query = QSqlQuery(self.db)
         if not query.exec("""
-            CREATE TABLE IF NOT EXISTS controle_atas (
+            CREATE TABLE IF NOT EXISTS controle_atas_api (
                 grupo TEXT,                         
                 item TEXT PRIMARY KEY,
                 catalogo TEXT,
@@ -75,19 +75,19 @@ class GerarAtasModel(QObject):
                 cnpj TEXT
             )
         """):
-            print("Falha ao criar a tabela 'controle_atas':", query.lastError().text())
+            print("Falha ao criar a tabela 'controle_atas_api':", query.lastError().text())
         else:
-            print("Tabela 'controle_atas' criada com sucesso.")
+            print("Tabela 'controle_atas_api' criada com sucesso.")
 
     def adjust_table_atas_structure(self):
         query = QSqlQuery(self.db)
-        if not query.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='controle_atas'"):
+        if not query.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='controle_atas_api'"):
             print("Erro ao verificar existência da tabela:", query.lastError().text())
         if not query.next():
-            print("Tabela 'controle_atas' não existe. Criando tabela...")
+            print("Tabela 'controle_atas_api' não existe. Criando tabela...")
             self.create_table_if_not_exists()
         else:
-            print("Tabela 'controle_atas' existe. Verificando estrutura da coluna...")
+            print("Tabela 'controle_atas_api' existe. Verificando estrutura da coluna...")
 
     def configure_columns(self, table_view, visible_columns):
         for column in range(self.model.columnCount()):
@@ -159,6 +159,7 @@ class CustomSqlTableModel(QSqlTableModel):
             self.close_connection()
 
     def carregar_tabela(self): 
+        conn = None  # Inicializa conn como None
         try:
             # Seleciona o arquivo para carregar
             caminho_arquivo, _ = QFileDialog.getOpenFileName(None, "Carregar Tabela", "", "Arquivos Excel (*.xlsx);;Todos os Arquivos (*)")
@@ -173,16 +174,16 @@ class CustomSqlTableModel(QSqlTableModel):
             cursor = conn.cursor()
 
             # Exclui a tabela existente, se houver
-            cursor.execute("DROP TABLE IF EXISTS controle_atas")
+            cursor.execute("DROP TABLE IF EXISTS controle_atas_api")
             conn.commit()
-            print("Tabela 'controle_atas' excluída com sucesso.")
+            print("Tabela 'controle_atas_api' excluída com sucesso.")
 
             # Recria a tabela usando o método do GerarAtasModel
             if self.gerar_atas_model:
                 self.gerar_atas_model.create_table_if_not_exists()
             
             # Insere os novos dados no banco de dados
-            tabela.to_sql("controle_atas", conn, if_exists='append', index=False)
+            tabela.to_sql("controle_atas_api", conn, if_exists='append', index=False)
             print("Dados inseridos no banco com sucesso.")
 
             # Atualiza o modelo para refletir as mudanças
@@ -194,7 +195,9 @@ class CustomSqlTableModel(QSqlTableModel):
             QMessageBox.critical(None, "Erro", f"Erro ao carregar a tabela: {e}")
 
         finally:
-            conn.close()
+            if conn:  # Verifica se conn foi atribuído antes de fechar
+                conn.close()
+
 
     def abrir_tabela_nova(self):
         # Define o caminho do arquivo Excel

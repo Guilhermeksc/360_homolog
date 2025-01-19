@@ -214,43 +214,27 @@ class MainWindow(QMainWindow):
     def show_atas_api(self):
         self.clear_content_area()
 
-        # Criação de uma QLabel com o texto "Módulo Atas"
-        label = QLabel("Atas API", self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Alinhamento centralizado
-        label.setStyleSheet("""
-            font-size: 24px;
-            color: #333;
-            font-weight: bold;
-        """)  # Estilização opcional para a label
-        
-        # Adiciona a QLabel ao layout de conteúdo
-        self.content_layout.addWidget(label)
-        self.set_active_button(self.buttons["api_azul"])  # Define o botão "Atas (API)" como ativo
+        # Inicializa o modelo e o caminho do banco de dados para Atas
+        self.gerar_atas_api_model = GerarAtasApiModel(DATA_ATAS_API_PATH)
 
-    # def show_atas_api(self):
-    #     self.clear_content_area()
+        # Configura a visualização (View) e o controlador (Controller)
+        self.gerar_atas_api_view = GerarAtasApiView(
+            icons=self.icons,
+            model=self.gerar_atas_api_model.setup_model("controle_atas_api", editable=True),
+            database_path=DATA_ATAS_API_PATH,
+            parent=self
+        )
+        self.gerar_atas_controller = GerarAtasApiController(
+            icons=self.icons,
+            view=self.gerar_atas_api_view,
+            model=self.gerar_atas_api_model
+        )
 
-    #     # Inicializa o modelo e o caminho do banco de dados para Atas
-    #     self.gerar_atas_api_model = GerarAtasApiModel(DATA_ATAS_API_PATH)
+        # Adiciona a view de Atas à área de conteúdo
+        self.content_layout.addWidget(self.gerar_atas_api_view)
 
-    #     # Configura a visualização (View) e o controlador (Controller)
-    #     self.gerar_atas_api_view = GerarAtasApiView(
-    #         icons=self.icons,
-    #         model=self.gerar_atas_api_model.setup_model("controle_atas", editable=True),
-    #         database_path=DATA_ATAS_API_PATH,
-    #         parent=self
-    #     )
-    #     self.gerar_atas_controller = GerarAtasApiController(
-    #         icons=self.icons,
-    #         view=self.gerar_atas_api_view,
-    #         model=self.gerar_atas_api_model
-    #     )
-
-    #     # Adiciona a view de Atas à área de conteúdo
-    #     self.content_layout.addWidget(self.gerar_atas_api_view)
-
-    #     # Define o botão "ata" como ativo
-    #     self.set_active_button(self.buttons["api_azul"])
+        # Define o botão "ata" como ativo
+        self.set_active_button(self.buttons["api_azul"])
         
     def show_indicadores(self):
         self.clear_content_area()

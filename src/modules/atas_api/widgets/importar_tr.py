@@ -19,15 +19,19 @@ class TermoReferenciaWidget(QWidget):
         # Criar layout horizontal para os botões
         title_layout = QHBoxLayout()
 
+        title_layout.addStretch()
+        
         title = QLabel("Especificação do Termo de Referência")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setFont(QFont('Arial', 16, QFont.Weight.Bold))
         title_layout.addWidget(title)
-                
-        # Usando add_button para criar e adicionar botões
-        add_button("Abrir Tabela Nova", "excel_down", self.abrirTabelaNova, title_layout, self.icons, tooltip="Cria e abre uma nova tabela em Excel")
-        add_button("Carregar Tabela", "excel_up", self.carregarTabela, title_layout, self.icons, tooltip="Carrega uma tabela existente para o banco de dados")
 
+        # Usando add_button para criar e adicionar botões
+        add_button("Abrir Tabela Nova", "excel_down", self.abrirTabelaNova, title_layout, self.icons, tooltip="Cria e abre uma nova tabela em Excel", button_size=(200, 30))
+        add_button("Carregar Tabela", "excel_up", self.carregarTabela, title_layout, self.icons, tooltip="Carrega uma tabela existente para o banco de dados", button_size=(200, 30))
+        
+        title_layout.addStretch()
+        
         # Adicionar layout de botões ao layout principal
         self.layout.addLayout(title_layout)
 
