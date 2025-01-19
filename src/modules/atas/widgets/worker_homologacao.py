@@ -271,7 +271,7 @@ class ModeloTreeview:
 
     def initializar_modelo(self, dataframe):
         total_items = len(dataframe)
-        situacoes_analizadas = ['Adjudicado e Homologado', 'Fracassado e Homologado', 'Deserto e Homologado', 'Anulado e Homologado']
+        situacoes_analizadas = ['Adjudicado e Homologado', 'Fracassado e Homologado', 'Deserto e Homologado', 'Anulado e Homologado', 'Revogado e Homologado']
         nao_analisados = len(dataframe[~dataframe['situacao'].isin(situacoes_analizadas)])
         header = f"Total de itens da licitação {total_items} | Total de itens analisados {total_items - nao_analisados} | Total de itens não analisados {nao_analisados}"
         model = QStandardItemModel()
@@ -305,7 +305,7 @@ class ModeloTreeview:
 
     def adicionar_informacao_ao_item(self, row, parent_item, empresa_items, parent_key):
         font_size = "14px"  # Define o tamanho da fonte
-        situacoes_especificas = ['Fracassado e Homologado', 'Deserto e Homologado', 'Anulado e Homologado']
+        situacoes_especificas = ['Fracassado e Homologado', 'Deserto e Homologado', 'Anulado e Homologado', 'Revogado e Homologado']
         situacao = row['situacao']
 
         # Determinar se a situação é específica ou "Não definido"

@@ -239,36 +239,21 @@ class MainWindow(QMainWindow):
     def show_indicadores(self):
         self.clear_content_area()
 
-        # Criação de uma QLabel com o texto "Módulo Atas"
-        label = QLabel("Indicadores", self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Alinhamento centralizado
-        label.setStyleSheet("""
-            font-size: 24px;
-            color: #333;
-            font-weight: bold;
-        """)  # Estilização opcional para a label
+        self.db_manager = DatabaseManager(DATA_ATAS_PATH)
         
-        # Adiciona a QLabel ao layout de conteúdo
-        self.content_layout.addWidget(label)
-        self.set_active_button(self.buttons["statistics_azul"])  # Define o botão "Atas (API)" como ativo
+        # Instanciar a nova view
+        indicadores_view = IndicadoresView(
+            db_manager=self.db_manager,
+            data_atas_path=DATA_ATAS_PATH,
+            data_atas_api_path=DATA_ATAS_API_PATH,
+            parent=self
+        )
 
-    # def show_indicadores(self):
-    #     self.clear_content_area()
+        # Adicionar a view ao layout de conteúdo
+        self.content_layout.addWidget(indicadores_view)
 
-    #     self.db_manager = DatabaseManager() 
-    #     # Instanciar a nova view
-    #     indicadores_view = IndicadoresView(
-    #         db_manager=self.db_manager,
-    #         data_atas_path=DATA_ATAS_PATH,
-    #         data_atas_api_path=DATA_ATAS_API_PATH,
-    #         parent=self
-    #     )
-
-    #     # Adicionar a view ao layout de conteúdo
-    #     self.content_layout.addWidget(indicadores_view)
-
-    #     # Define o botão correspondente como ativo
-    #     self.set_active_button(self.buttons["statistics_azul"])
+        # Define o botão correspondente como ativo
+        self.set_active_button(self.buttons["statistics_azul"])
     
     def show_config(self):
         self.clear_content_area()

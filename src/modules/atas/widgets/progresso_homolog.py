@@ -727,7 +727,7 @@ padrao_grupo2 = (
     r"(?:Critério\s+de\s+julgamento:\s+(?P<crit_julgamento>.*?))?\s*"
     r"Quantidade:\s+(?P<quantidade>\d+)\s+"
     r"Unidade\s+de\s+fornecimento:\s+(?P<unidade>.*?)\s+"
-    r"Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado)"
+    r"Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado|Revogado e Homologado)"
 )
 
 padrao_item2 = (
@@ -735,7 +735,7 @@ padrao_item2 = (
     r"Quantidade:\s+(?P<quantidade>\d+)\s+"
     r"Valor\s+estimado:\s+R\$\s+(?P<valor>[\d,.]+)(?:\s+\(unitário\))?\s+"
     r"Unidade\s+de\s+fornecimento:\s+(?P<unidade>.*?)(?:\s+R\$|$)"
-    r".*?Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado)"
+    r".*?Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado|Revogado e Homologado)"
 )
 
 

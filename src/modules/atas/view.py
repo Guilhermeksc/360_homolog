@@ -6,7 +6,6 @@ from modules.atas.widgets.importar_tr import TermoReferenciaWidget
 from modules.atas.widgets.instrucoes import InstructionWidget
 from modules.atas.widgets.progresso_homolog import ProcessamentoWidget
 from modules.atas.widgets.sicaf import RegistroSICAFDialog
-from modules.atas.widgets.indicadores import IndicadoresWidget
 from modules.atas.widgets.atas import GerarAtaWidget
 from pathlib import Path
 from paths import PDF_DIR
