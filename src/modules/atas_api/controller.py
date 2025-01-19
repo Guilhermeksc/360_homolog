@@ -11,12 +11,14 @@ class GerarAtasController(QObject):
         self.setup_connections()
 
     def setup_connections(self):
-        # Conecta o sinal de instruções
-        self.view.instructionSignal.connect(self.instrucoes)
-        self.view.trSignal.connect(self.termo_referencia)
-        self.view.homologSignal.connect(self.termo_homologacao)
-        self.view.sicafSignal.connect(self.sicaf_widget)
+        # Conecta os sinais da view aos métodos do controlador
+        # self.view.instrucoesSignal.connect(self.instrucoes)
+        self.view.trSignal.connect(self.termo_referencia) 
+        self.view.homologSignal.connect(self.termo_homologacao) 
+        self.view.sicafSignal.connect(self.sicaf_widget) 
+        self.view.apiSignal.connect(self.api_consulta) 
         self.view.atasSignal.connect(self.gerar_atas)
+        self.view.indicadoresSignal.connect(self.indicadores) 
 
         # Configura os botões usando GerarAtasModel
         self.view.tr_widget.abrirTabelaNova.connect(self.abrir_tabela_nova)
@@ -60,6 +62,14 @@ class GerarAtasController(QObject):
         # Exibe o widget de Processamento para Termo de Homologação
         self.view.content_area.setCurrentWidget(self.view.sicaf_widget)
 
+    def api_consulta(self):
+        # Atualiza para o widget de consulta API
+        self.view.content_area.setCurrentWidget(self.view.api_widget)
+
     def gerar_atas(self):
         # Atualiza para o widget de geração de atas
         self.view.content_area.setCurrentWidget(self.view.atas_widget)
+
+    def indicadores(self):
+        # Atualiza para o widget de indicadores
+        self.view.content_area.setCurrentWidget(self.view.indicadores_widget)

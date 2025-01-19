@@ -15,13 +15,29 @@ class TermoReferenciaWidget(QWidget):
         self.icons = icons
         # Configuração do layout principal
         self.layout = QVBoxLayout(self)
+        
+        # Configuração do título
+        
+        # Adicionar layout de botões ao layout principal
+        title_layout = QHBoxLayout()
 
+        title_layout.addStretch()
+        
         title = QLabel("Especificação do Termo de Referência")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setFont(QFont('Arial', 16, QFont.Weight.Bold))
-        self.layout.addWidget(title)
+        title_layout.addWidget(title)
 
-        title1 = QLabel("Este passo é ncessário para obter as especificações do termo de referência, que não constam no termo de homologação ou no comprasnet.")
+        # Usando add_button para criar e adicionar botões
+        add_button("Abrir Tabela Nova", "excel_down", self.abrirTabelaNova, title_layout, self.icons, tooltip="Cria e abre uma nova tabela em Excel", button_size=(200, 30))
+        add_button("Carregar Tabela", "excel_up", self.carregarTabela, title_layout, self.icons, tooltip="Carrega uma tabela existente para o banco de dados", button_size=(200, 30))
+        
+        title_layout.addStretch()
+        
+        # Adicionar layout de botões ao layout principal
+        self.layout.addLayout(title_layout)
+        
+        title1 = QLabel("Este passo é necessário para obter as especificações do termo de referência, que não constam no termo de homologação ou no comprasnet.")
         title1.setAlignment(Qt.AlignmentFlag.AlignLeft)
         title1.setFont(QFont('Arial', 12))
         self.layout.addWidget(title1)
@@ -40,42 +56,34 @@ class TermoReferenciaWidget(QWidget):
         # Aplicar estilo CSS para personalização adicional
         self.table_view.setStyleSheet("""
             QTableView {
-                background-color: #181928;
-                color: #FFFFFF;
-                gridline-color: #3C3C5A;
-                alternate-background-color: #2C2F3F;
-                selection-background-color: #2C2F3F;
-                selection-color: #D4F8F2;
-                border: none;
-                                      font-size: 14px;
+                background-color: #F3F3F3; /* Fundo principal */
+                color: #333333; /* Cor do texto */
+                gridline-color: #CCCCCC; /* Cor das linhas da grade */
+                alternate-background-color: #FFFFFF; /* Fundo alternado */
+                selection-background-color: #E0E0E0; /* Fundo ao selecionar */
+                selection-color: #000000; /* Cor do texto ao selecionar */
+                border: 1px solid #CCCCCC; /* Borda ao redor da tabela */
+                font-size: 14px;
             }
             QTableView::item:selected {
-                background-color: #2C2F3F;
-                color: #D4F8F2;
+                background-color: #E0E0E0; /* Fundo ao selecionar item */
+                color: #000000; /* Cor do texto do item selecionado */
             }
             QTableView::item {
-                border: 1px solid transparent;
+                border: 1px solid transparent; /* Borda invisível por padrão */
                 padding: 5px;
             }
             QHeaderView::section {
-                background-color: #2C9E97;
-                color: black;
-                                      font-weight: bold;
-                                      font-size: 14px;
+                background-color: #D6D6D6; /* Fundo do cabeçalho */
+                color: #333333; /* Cor do texto do cabeçalho */
+                font-weight: bold;
+                font-size: 14px;
                 padding: 4px;
-                border: 1px solid #3C3C5A;
+                border: 1px solid #CCCCCC; /* Borda entre as seções */
             }
         """)
 
-        # Criar layout horizontal para os botões
-        button_layout = QHBoxLayout()
 
-        # Usando add_button para criar e adicionar botões
-        add_button("Abrir Tabela Nova", "excel_down", self.abrirTabelaNova, button_layout, self.icons, tooltip="Cria e abre uma nova tabela em Excel")
-        add_button("Carregar Tabela", "excel_up", self.carregarTabela, button_layout, self.icons, tooltip="Carrega uma tabela existente para o banco de dados")
-
-        # Adicionar layout de botões ao layout principal
-        self.layout.addLayout(button_layout)
 
         # Configurar o modelo SQL para visualização
         self.configurarSqlModelSignal.emit()

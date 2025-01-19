@@ -51,16 +51,7 @@ class RegistroSICAFDialog(QWidget):
         self.selecao_combobox.setFont(QFont('Arial', 12))
         selecao_layout.addWidget(self.selecao_combobox)
 
-        # Adiciona o botão "Resultados" e habilita/desabilita conforme o estado do DataFrame
-        self.resultados_button = add_button_func(
-            "Resultados", 
-            "statistics", 
-            self.open_results_treeview, 
-            selecao_layout, 
-            self.icons, 
-            "Clique para ver a relação de itens por empresa"
-        )
-        self.resultados_button.setEnabled(self.homologacao_dataframe is not None and not self.homologacao_dataframe.empty)
+        selecao_layout.addStretch()
 
         main_layout.addLayout(selecao_layout)
 
@@ -88,20 +79,13 @@ class RegistroSICAFDialog(QWidget):
 
         button_layout = QHBoxLayout()
         button_layout.addStretch()
-        add_button_func_vermelho("Processamento de SICAF", "sicaf", self.iniciar_processamento_sicaf, button_layout, self.icons, "Iniciar processamento do SICAF")
+        add_button_func_vermelho("Iniciar Processamento", self.iniciar_processamento_sicaf, button_layout, "Iniciar processamento do SICAF", button_size=(300, 40))
         button_layout.addStretch()
         # Adiciona o layout de botão centralizado ao layout principal
         main_layout.addLayout(button_layout)
 
         # Chama atualizar_lista após todos os elementos serem inicializados
         self.atualizar_lista()
-
-    def atualizar_estado_botoes(self):
-        """Habilita ou desabilita o botão de Resultados com base no estado do DataFrame."""
-        if self.homologacao_dataframe is not None and not self.homologacao_dataframe.empty:
-            self.resultados_button.setEnabled(True)
-        else:
-            self.resultados_button.setEnabled(False)
 
     def open_results_treeview(self):
         if self.homologacao_dataframe is not None and not self.homologacao_dataframe.empty:
@@ -155,9 +139,6 @@ class RegistroSICAFDialog(QWidget):
             self.atualizar_lista()
         else:
             self.homologacao_dataframe = pd.DataFrame()
-
-        # Atualiza o estado dos botões
-        self.atualizar_estado_botoes()
 
     def criar_layout_esquerdo(self):
         left_layout = QVBoxLayout()
@@ -333,19 +314,15 @@ class RegistroSICAFDialog(QWidget):
         # Adiciona os botões "Abrir Pasta" e "Atualizar" ao layout
         top_right_layout = self.criar_botoes_direitos()
         right_layout.addLayout(top_right_layout)
-
-        # Conta e exibe a quantidade de arquivos PDF
-        self.right_label = QLabel(self.obter_texto_arquivos_pdf())
-        right_layout.addWidget(self.right_label)
-
+        right_layout.setSpacing(5)
         # Define o QListWidget para a lista de arquivos PDF
         self.pdf_list_widget = QListWidget()
         # Aplica o estilo ao QListWidget
         list_widget_style = """
         QListWidget {
-            color: #FFFFFF;
-            background-color: #2C2F3F; /* Cor de fundo padrão */
-            border: 1px solid #3C3C5A; /* Borda padrão */
+            color: #333333; /* Texto escuro para contraste */
+            background-color: #F3F3F3; /* Cor de fundo padrão */
+            border: 1px solid #CCCCCC; /* Borda clara para harmonizar com o fundo */
             padding: 5px;
             border-radius: 5px;
         }
@@ -357,22 +334,31 @@ class RegistroSICAFDialog(QWidget):
         }
 
         QListWidget::item:selected {
-            background-color: #3C3F52; /* Cor de fundo para seleção */
-            border: 1px solid #5A5A7A; /* Borda para seleção */
+            background-color: #E0E0E0; /* Cor de fundo para seleção */
+            border: 1px solid #A0A0A0; /* Borda para seleção */
+            color: #000000; /* Texto preto para melhor legibilidade */
         }
 
         QListWidget::item:hover {
-            background-color: #353847; /* Cor de fundo ao passar o mouse */
-            border: 1px solid #5A5A7A; /* Borda ao passar o mouse */
+            background-color: #D6D6D6; /* Cor de fundo ao passar o mouse */
+            border: 1px solid #AAAAAA; /* Borda ao passar o mouse */
         }
+
         """
         self.pdf_list_widget.setStyleSheet(list_widget_style)
         
         self.load_pdf_files()
         right_layout.addWidget(self.pdf_list_widget)
+        layout_contador_pdf = QHBoxLayout()
+        layout_contador_pdf.addStretch()        
+        # Conta e exibe a quantidade de arquivos PDF
+        self.right_label = QLabel(self.obter_texto_arquivos_pdf())
+        self.right_label.setFont(QFont('Arial', 12, QFont.Weight.Bold))     
+        layout_contador_pdf.addWidget(self.right_label)
+        layout_contador_pdf.addStretch()
+        right_layout.addLayout(layout_contador_pdf)
 
         return right_widget
-
 
     def load_pdf_files(self):
         """Carrega arquivos .pdf da pasta sicaf_dir e os exibe na lista."""
@@ -388,10 +374,10 @@ class RegistroSICAFDialog(QWidget):
         top_right_layout = QHBoxLayout()
 
         # Botão "Abrir Pasta"
-        add_button_func("Abrir Pasta PDF", "add-folder", self.abrir_pasta_sicaf, top_right_layout, self.icons, "Clique para abrir a pasta de processamento do SICAF")
+        add_button_func("Abrir Pasta", "open-folder", self.abrir_pasta_sicaf, top_right_layout, self.icons, "Clique para abrir a pasta de processamento do SICAF",  button_size=(150, 30))
 
         # Botão "Atualizar"
-        add_button_func("Atualizar", "refresh", self.atualizar_lista, top_right_layout, self.icons, "Clique para atualizar os arquivos PDF")
+        add_button_func("Atualizar", "loading-arrow", self.atualizar_lista, top_right_layout, self.icons, "Clique para atualizar os arquivos PDF",  button_size=(150, 30))
 
         return top_right_layout
 

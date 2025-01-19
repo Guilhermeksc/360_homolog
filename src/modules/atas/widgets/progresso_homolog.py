@@ -60,16 +60,49 @@ class ProcessamentoWidget(QWidget):
         title.setFont(QFont('Arial', 16, QFont.Weight.Bold))
         main_layout.addWidget(title)
 
+        layout_instruction = QHBoxLayout()
+        layout_instruction.addStretch()
+        label_pdf = QLabel("Insira os arquivos PDF na pasta")
+        label_pdf.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_pdf.setFont(QFont('Arial', 12, QFont.Weight.Bold))
+        layout_instruction.addWidget(label_pdf)
+            
+        add_button_func("Abrir Pasta", "open-folder", self.abrir_pasta_pdf, layout_instruction, self.icon_cache, "Clique para ver instruções", button_size=(150, 30))
+
+        label_contador = QLabel("e depois atualize o Contador")
+        label_contador.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label_contador.setFont(QFont('Arial', 12, QFont.Weight.Bold))
+        layout_instruction.addWidget(label_contador)  
+          
+        add_button_func("Atualizar", "loading-arrow", self.update_pdf_count, layout_instruction, self.icon_cache, "Clique para ver instruções",  button_size=(150, 30))
+        # add_button_func("Redefinir Pasta PDF", "add-folder", self.definir_pasta_pdf_padrao, button_layout, self.icon_cache, "Clique para ver instruções")
+        layout_instruction.addStretch()
+        main_layout.addLayout(layout_instruction)
+
+        layout_progress = QHBoxLayout()
+        
+        self.time_label = QLabel("Tempo decorrido: 0s")
+        self.time_label.setFont(QFont('Arial', 12))
+        layout_progress.addWidget(self.time_label)
+                        
         self.progress_bar = QProgressBar()
         self.progress_bar.setValue(0)
-        main_layout.addWidget(self.progress_bar)
+
+        # Define a fonte diretamente no QProgressBar
+        self.progress_bar.setFont(QFont('Arial', 12))
+        
+        layout_progress.addWidget(self.progress_bar)
+
+        
+        main_layout.addLayout(layout_progress)
 
         self.context_area = QTextEdit()
         self.context_area.setReadOnly(True)
+        
+        # Define a fonte e o tamanho do texto
+        self.context_area.setFont(QFont('Arial', 12))
+        
         main_layout.addWidget(self.context_area)
-
-        self.time_label = QLabel("Tempo decorrido: 0s")
-        main_layout.addWidget(self.time_label)
 
         self.setup_button_layout(main_layout)
         self.setLayout(main_layout)
@@ -79,11 +112,7 @@ class ProcessamentoWidget(QWidget):
     def setup_button_layout(self, main_layout):
         button_layout = QHBoxLayout()
         
-        add_button_func_vermelho("Iniciar Processamento", "pdf", self.start_processing, button_layout, self.icon_cache, "Clique para ver instruções")
-        add_button_func("Atualizar", "refresh", self.update_pdf_count, button_layout, self.icon_cache, "Clique para ver instruções")
-        add_button_func("Abrir Pasta PDF", "add-folder", self.abrir_pasta_pdf, button_layout, self.icon_cache, "Clique para ver instruções")
-        add_button_func("Redefinir Pasta PDF", "add-folder", self.definir_pasta_pdf_padrao, button_layout, self.icon_cache, "Clique para ver instruções")
-
+        add_button_func_vermelho("Iniciar Processamento", self.start_processing, button_layout, "Clique para ver instruções", button_size=(300, 40))
         main_layout.addLayout(button_layout)
 
     def abrir_pasta_pdf(self):
@@ -100,7 +129,7 @@ class ProcessamentoWidget(QWidget):
             # Emite o sinal para notificar a mudança de diretório PDF
             self.main_window.pdf_dir_changed.emit(self.pdf_dir)
             QMessageBox.information(self, "Pasta Padrão Definida", f"A pasta padrão foi definida como: {folder}")
-
+            
     def update_context(self, text):
         self.context_area.append(text)
 
@@ -259,7 +288,8 @@ class ProcessamentoWidget(QWidget):
     def update_time(self):
         elapsed_time = int(time.time() - self.start_time)
         self.time_label.setText(f"Tempo decorrido: {elapsed_time}s")
-
+        self.time_label.setFont(QFont('Arial', 12))
+        
     def verify_directories(self):
         if not self.pdf_dir.exists() or not self.pdf_dir.is_dir():
             self.update_context("Diretório PDF não encontrado.")
@@ -703,9 +733,9 @@ padrao_grupo2 = (
 padrao_item2 = (
     r"Item\s+(?P<item>\d+)\s+-\s+.*?"
     r"Quantidade:\s+(?P<quantidade>\d+)\s+"
-    r"Valor\s+estimado:\s+R\$\s+(?P<valor>[\d,.]+)\s+"
-    r"Unidade\s+de\s+fornecimento:\s+(?P<unidade>.*?)\s+"
-    r"Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado)"
+    r"Valor\s+estimado:\s+R\$\s+(?P<valor>[\d,.]+)(?:\s+\(unitário\))?\s+"
+    r"Unidade\s+de\s+fornecimento:\s+(?P<unidade>.*?)(?:\s+R\$|$)"
+    r".*?Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado)"
 )
 
 
@@ -718,11 +748,12 @@ padrao_4 = (
 padrao_3 = (
     r"(Adjucado|Adjudicado)\s+e\s+Homologado\s+por\s+CPF\s+(?P<cpf_od>\*\*\*.\d{3}.\*\*\*-\*\d{1})\s+-\s+"
     r"(?P<ordenador_despesa>[^\d,]+?)\s+para\s+"
-    r"(?P<empresa>.*?)(?=\s*,\s*CNPJ\s+)"  # Captura o nome da empresa até a próxima vírgula e "CNPJ"
+    r"(?P<empresa>.*?)(?=\s*,\s*CNPJ\s+)"
     r"\s*,\s*CNPJ\s+(?P<cnpj>\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}),\s+"
-    r"melhor\s+lance\s*:\s*R\$\s*(?P<melhor_lance>[\d,.]+)"
-    r"(?:,\s+valor\s+negociado\s*:\s*R\$\s*(?P<valor_negociado>[\d,.]+))?\s+"  # Captura opcional de "valor negociado"
-    r"Propostas\s+do\s+Item"  # Finaliza a captura em "Propostas do Item"
+    r"melhor\s+lance\s*:\s*R\$\s*(?P<melhor_lance>[\d,.]+)\s*\(unitário\)\s*"
+    r"/\s*R\$\s*(?P<total_lance>[\d,.]+)\s*\(total\)"
+    r"(?:,\s+valor\s+negociado\s*:\s*R\$\s*(?P<valor_negociado>[\d,.]+))?\s+"
+    r"Propostas\s+do\s+Item"
 )
 
 def processar_item(match, conteudo: str, ultima_posicao_processada: int, padrao_3: str, padrao_4: str) -> dict:

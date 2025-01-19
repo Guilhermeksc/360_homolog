@@ -159,7 +159,6 @@ class CustomSqlTableModel(QSqlTableModel):
             self.close_connection()
 
     def carregar_tabela(self): 
-        conn = None  # Inicializa conn como None
         try:
             # Seleciona o arquivo para carregar
             caminho_arquivo, _ = QFileDialog.getOpenFileName(None, "Carregar Tabela", "", "Arquivos Excel (*.xlsx);;Todos os Arquivos (*)")
@@ -195,8 +194,7 @@ class CustomSqlTableModel(QSqlTableModel):
             QMessageBox.critical(None, "Erro", f"Erro ao carregar a tabela: {e}")
 
         finally:
-            if conn:  # Verifica se conn foi atribuído antes de fechar
-                conn.close()
+            conn.close()
 
     def abrir_tabela_nova(self):
         # Define o caminho do arquivo Excel

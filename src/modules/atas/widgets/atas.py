@@ -106,6 +106,8 @@ class GerarAtaWidget(QWidget):
         self.selecao_combobox.setFont(QFont('Arial', 12))
         selecao_layout.addWidget(self.selecao_combobox)
 
+        selecao_layout.addStretch()
+
         # Adiciona o layout ao layout principal
         layout.addLayout(selecao_layout)
 
@@ -209,7 +211,7 @@ class GerarAtaWidget(QWidget):
         # Layout horizontal para centralizar o botão
         button_layout = QHBoxLayout()
         button_layout.addStretch()
-        add_button_func_vermelho("Gerar Ata", "process", self.gerar_ata, button_layout, self.icons, "Clique para gerar a ata")
+        add_button_func_vermelho("Gerar Ata", self.gerar_ata, button_layout, "Clique para gerar a ata", button_size=(300, 40))
         button_layout.addStretch()
         # Adiciona o layout de botão centralizado ao layout principal
         layout.addLayout(button_layout)
@@ -330,23 +332,7 @@ class GerarAtaWidget(QWidget):
             # Exibe o tipo e se está vazio ou não
             print(f"Tipo de self.dataframe_selecionado: {type(self.dataframe_selecionado)}")
             print(f"DataFrame está vazio: {self.dataframe_selecionado.empty if self.dataframe_selecionado is not None else 'None'}")
-
-    def abrir_edicao(self, categoria):
-        dialog = EditPredefinicoesDialog(categoria, self.config_data, self)
-        if dialog.exec():
-            self.salvar_configuracoes()
-
-            # Recarregar os valores no combobox específico
-            if categoria == "cidades":
-                self.cidades_combobox.clear()
-                self.cidades_combobox.addItems(self.config_data["cidades"])
-            elif categoria == "organizations":
-                self.org_combobox.clear()
-                self.org_combobox.addItems(self.config_data["organizations"])
-            elif categoria == "ordenador_despesas":
-                self.ordenador_despesa_combobox.clear()
-                self.ordenador_despesa_combobox.addItems(self.config_data["ordenador_despesas"])
-
+            
     def salvar_configuracoes(self):
         with open(PRE_DEFINICOES_JSON, 'w', encoding='utf-8') as file:
             json.dump(self.config_data, file, ensure_ascii=False, indent=4)

@@ -239,7 +239,7 @@ class ConsultarAPI(QWidget):
         # Botão "Consultar PNCP"
         button_layout = QHBoxLayout()
         button_layout.addStretch()  # Espaço flexível à esquerda
-        add_button_func_vermelho("Consultar PNCP", "api", self.iniciar_consulta, button_layout, self.icons, "Clique para consultar o sequencial da contratação no PNCP")  
+        add_button_func_vermelho("Consultar PNCP", "api", self.iniciar_consulta, button_layout, self.icons, "Clique para consultar o sequencial da contratação no PNCP", button_size=(300, 40))  
         button_layout.addStretch()  # Espaço flexível à direita
         layout.addLayout(button_layout)
 

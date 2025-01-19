@@ -39,7 +39,7 @@ def add_button_copy(text, icon_name, slot, layout, icons, tooltip=None):
     button.setCursor(Qt.CursorShape.PointingHandCursor)
     return button
 
-def add_button_func(text, icon_name, slot, layout, icons, tooltip=None):
+def add_button_func(text, icon_name, slot, layout, icons, tooltip=None, button_size=None):
     button = QPushButton()
     
     # Configurar ícone no botão
@@ -47,7 +47,11 @@ def add_button_func(text, icon_name, slot, layout, icons, tooltip=None):
     if icon:
         button.setIcon(icon)
     button.setIconSize(QSize(30, 30))
-    
+
+    # Define o tamanho do botão, se especificado
+    if button_size:
+        button.setFixedSize(QSize(*button_size))
+            
     # Apenas define o texto se for passado
     if text:
         button.setText(text)
@@ -60,7 +64,7 @@ def add_button_func(text, icon_name, slot, layout, icons, tooltip=None):
             font-size: 14px;
             font-weight: bold;
             border: 1px solid #CCCCCC;
-            padding: 8px 16px;
+            padding: 0px 16px;
             border-radius: 5px;
         }}
         QPushButton:hover {{
@@ -83,30 +87,29 @@ def add_button_func(text, icon_name, slot, layout, icons, tooltip=None):
     return button
 
 
-def add_button_func_vermelho(text, icon_name, slot, layout, icons, tooltip=None):
+def add_button_func_vermelho(text, slot, layout, tooltip=None, button_size=None):
     button = QPushButton(text)
-    icon = icons.get(icon_name)
-    if icon:
-        button.setIcon(icon)
 
-    button.setIconSize(QSize(40, 40))
+    # Define o tamanho do botão, se especificado
+    if button_size:
+        button.setFixedSize(QSize(*button_size))
     
     button.setStyleSheet(f"""
         QPushButton {{
-            background-color: #F3F3F3;
+            background-color: #FFCCCC;
             color: #333333;
-            font-size: 14px;
+            font-size: 20px;
             font-weight: bold;
             border: 1px solid #CCCCCC;
-            padding: 8px 16px;
+            padding: 0px 16px;
             border-radius: 5px;
         }}
         QPushButton:hover {{
-            background-color: #FFCCCC; /* Fundo vermelho claro ao passar o mouse */
+            background-color: #F3F3F3;
             color: #800000; /* Texto vermelho escuro */
         }}
         QPushButton:pressed {{
-            background-color: #FF9999; /* Fundo vermelho um pouco mais escuro ao pressionar */
+            background-color: #FF9999; 
             color: #660000; /* Texto vermelho mais escuro */
         }}
     """)
@@ -119,6 +122,7 @@ def add_button_func_vermelho(text, icon_name, slot, layout, icons, tooltip=None)
     layout.addWidget(button)
     button.setCursor(Qt.CursorShape.PointingHandCursor)
     return button
+
 
 def add_button_result(label, icon_name, signal, layout, icons=None, tooltip=None, additional_click_action=None):
     button = QPushButton(label)
@@ -144,7 +148,7 @@ def add_button_result(label, icon_name, signal, layout, icons=None, tooltip=None
             font-size: 14px;
             font-weight: bold;
             border: 1px solid #CCCCCC;
-            padding: 8px 16px;
+            padding: 0px 16px;
             border-radius: 5px;
         }}
         QPushButton:hover {{
@@ -165,7 +169,7 @@ def add_button_result(label, icon_name, signal, layout, icons=None, tooltip=None
     return button
 
 
-def add_button(label, icon_name, signal, layout, icons=None, tooltip=None):
+def add_button(label, icon_name, signal, layout, icons=None, tooltip=None, button_size=None):
     button = QPushButton(label)
     
     # Verifica se icons não é None antes de tentar obter o ícone
@@ -174,8 +178,12 @@ def add_button(label, icon_name, signal, layout, icons=None, tooltip=None):
     else:
         print(f"Aviso: Ícone '{icon_name}' não encontrado ou 'icons' não foi passado.")
     
-    button.setIconSize(QSize(30, 30))
+    button.setIconSize(QSize(30, 30))  # Aumenta o tamanho do ícone para sobrepor os limites
     button.clicked.connect(signal.emit)
+
+    # Define o tamanho do botão, se especificado
+    if button_size:
+        button.setFixedSize(QSize(*button_size))
 
     # Estilo do botão
     button.setStyleSheet(f"""
@@ -185,7 +193,7 @@ def add_button(label, icon_name, signal, layout, icons=None, tooltip=None):
             font-size: 14px;
             font-weight: bold;
             border: 1px solid #CCCCCC;
-            padding: 8px 16px;
+            padding: 0px 16px;
             border-radius: 5px;
         }}
         QPushButton:hover {{
@@ -204,7 +212,6 @@ def add_button(label, icon_name, signal, layout, icons=None, tooltip=None):
 
     layout.addWidget(button)
     return button
-
 
 
 def create_button(text, icon, callback, tooltip_text, icon_size=QSize(30, 30)):

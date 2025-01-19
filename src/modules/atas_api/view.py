@@ -14,12 +14,12 @@ from paths import PDF_DIR
 from .database import DatabaseATASManager
 
 class GerarAtasView(QMainWindow):
-    instructionSignal = pyqtSignal()
+    # instrucoesSignal = pyqtSignal()
     trSignal = pyqtSignal()
     homologSignal = pyqtSignal()
-    sicafSignal = pyqtSignal()
+    sicafSignal = pyqtSignal() 
     atasSignal = pyqtSignal()
-    pdf_dir_changed = pyqtSignal(Path)
+    pdf_dir_changed = pyqtSignal(Path) 
 
     def __init__(self, icons, model, database_path, parent=None):
         super().__init__(parent)
@@ -36,32 +36,25 @@ class GerarAtasView(QMainWindow):
         self.main_widget = QWidget(self)
         self.setCentralWidget(self.main_widget)
         self.main_layout = QVBoxLayout(self.main_widget)
-
+        
         # Título da interface
-        label_ata = QLabel("Atas de Registro de Preços (Extração dos PDF)", self)
-        label_ata.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label_ata.setStyleSheet("font-size: 30px; font-weight: bold;")
-        self.main_layout.addWidget(label_ata)
-
+        label_dispensa = QLabel("Atas de Registro de Preços (Extração dos PDF)", self)
+        label_dispensa.setStyleSheet("font-size: 20px; font-weight: bold; color: #4E648B")
+        self.main_layout.addWidget(label_dispensa)
+        
         # Adiciona menu e conteúdo
         menu_widget = self.create_menu_layout()
-
+        
         # Área de conteúdo com QStackedWidget
         self.content_area = QStackedWidget()
         self.main_layout.addWidget(menu_widget)
         self.main_layout.addWidget(self.content_area)
-
+        
         # Inicializa os widgets de conteúdo para cada seção
         self.init_content_widgets()
 
-        # Define o conteúdo inicial
-        self.show_initial_content()
-
     def init_content_widgets(self):
-        # Adiciona o widget de instruções
-        self.instrucoes_widget = InstructionWidget(self)
-        self.content_area.addWidget(self.instrucoes_widget)
-
+        # Criação dos widgets de conteúdo e adição ao QStackedWidget
         self.tr_widget = TermoReferenciaWidget(self, self.icons)
         self.content_area.addWidget(self.tr_widget)
 
@@ -102,11 +95,6 @@ class GerarAtasView(QMainWindow):
             main_window=self)
         self.content_area.addWidget(self.indicadores_widget)
 
-
-    def show_initial_content(self):
-        # Define o widget inicial como ativo
-        self.content_area.setCurrentWidget(self.instrucoes_widget)
-        
     def create_menu_layout(self):
         menu_widget = QWidget()
         menu_layout = QHBoxLayout(menu_widget)
@@ -121,15 +109,13 @@ class GerarAtasView(QMainWindow):
     def create_button_layout(self):
         button_layout = QHBoxLayout()
 
-        # Adiciona o botão para instruções
-        add_button("Instruções", "info", self.instructionSignal, button_layout, self.icons, "Exibir Instruções")
-
-        # Outros botões já existentes
+        # Cria cada botão individualmente chamando a função add_button
         add_button("Termo de Referência", "layers", self.trSignal, button_layout, self.icons, "Acessar Termo de Referência")
         add_button("Termo de Homologação", "layers", self.homologSignal, button_layout, self.icons, "Acessar Termo de Homologação")
         add_button_result("SICAF", "layers", self.sicafSignal, button_layout, self.icons, "Atualizar SICAF", lambda: self.sicaf_widget.carregar_tabelas_result() if hasattr(self, 'sicaf_widget') else None)
-        add_button_result("Gerar Ata", "star", self.atasSignal, button_layout, self.icons, "Gerar nova ata", lambda: self.atas_widget.carregar_tabelas_result() if hasattr(self, 'sicaf_widget') else None)
+        add_button_result("Gerar Ata", "features", self.atasSignal, button_layout, self.icons, "Gerar nova ata", lambda: self.atas_widget.carregar_tabelas_result() if hasattr(self, 'sicaf_widget') else None)
 
+        # Adiciona um espaçamento no final para ajustar o layout
         return button_layout
 
     def configurar_visualizacao_tabela_tr(self, table_view):
@@ -148,12 +134,14 @@ class GerarAtasView(QMainWindow):
                 table_view.model().setHeaderData(col, Qt.Orientation.Horizontal, header)
 
         # Configuração de redimensionamento das colunas
-        table_view.setColumnWidth(1, 40)
-        table_view.setColumnWidth(2, 70)
-        table_view.setColumnWidth(3, 200)
+        table_view.setColumnWidth(0, 50)
+        table_view.setColumnWidth(1, 100)
+        table_view.setColumnWidth(2, 150)
         table_view.horizontalHeader().setStretchLastSection(True)
-
-
+        table_view.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        table_view.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        table_view.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        table_view.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
 
     def on_pdf_dir_changed(self, new_pdf_dir):
         # Lida com a mudança do diretório PDF, se necessário

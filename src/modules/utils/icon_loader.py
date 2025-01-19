@@ -30,6 +30,10 @@ def load_icons():
         "pdf_button": load_icon("pdf_button.png"),
         "pdf_button_blue": load_icon("pdf_button_blue.png"),
         "planning": load_icon("planning.png"),
+        "info": load_icon("info.png"),
+        "360-degrees": load_icon("360-degrees.png"),
+        "loading-arrow": load_icon("loading-arrow.png"),
+        
         
         "priority": load_icon("priority.png"),
         "head_skull": load_icon("head_skull.png"),

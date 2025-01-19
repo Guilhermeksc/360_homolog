@@ -81,12 +81,21 @@ class MainWindow(QMainWindow):
             button.setProperty("tooltipText", tooltip_text)  # Define o texto do tooltip como propriedade
             self.menu_layout.addWidget(button)
             self.buttons[icon_key] = button 
-    
+            
+        # Adiciona um espaço flexível para empurrar o ícone para o final
+        self.menu_layout.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding))
+
+        # Adiciona o ícone 360-degrees.png na parte inferior
+        icon_label = QLabel(self)
+        icon_label.setPixmap(self.icons["360-degrees"].pixmap(40, 40))  # Define o ícone com tamanho 50x50
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.menu_layout.addWidget(icon_label)
+
         # Cria um widget para o menu e adiciona o layout
         self.menu_widget = QWidget()
         self.menu_widget.setLayout(self.menu_layout)
         self.menu_widget.setStyleSheet("background-color: #13141F;")
-        self.central_layout.addWidget(self.menu_widget)        
+        self.central_layout.addWidget(self.menu_widget)
         
     def show_tooltip_with_arrow(self, text, button):
         self.tooltip_label.setText(text)
@@ -143,7 +152,6 @@ class MainWindow(QMainWindow):
 
         return super().eventFilter(obj, event)        
     
-
     def create_icon_button(self, icon_key, hover_icon_key, selected_icon_key):
         button = QPushButton()
         button.setIcon(self.icons[icon_key])  # Ícone padrão
@@ -178,24 +186,6 @@ class MainWindow(QMainWindow):
         button.setStyleSheet(get_menu_button_activated_style())
         self.active_button = button 
 
-
-    def show_atas(self):
-        self.clear_content_area()
-
-        # Criação de uma QLabel com o texto "Módulo Atas"
-        label = QLabel("Atas", self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Alinhamento centralizado
-        label.setStyleSheet("""
-            font-size: 24px;
-            color: #333;
-            font-weight: bold;
-        """)  # Estilização opcional para a label
-        
-        # Adiciona a QLabel ao layout de conteúdo
-        self.content_layout.addWidget(label)
-        self.set_active_button(self.buttons["pdf_button_blue"])  # Define o botão "Atas (API)" como ativo
-
-
     def show_atas(self):
         self.clear_content_area()
 
@@ -221,7 +211,6 @@ class MainWindow(QMainWindow):
         # Define o botão "ata" como ativo
         self.set_active_button(self.buttons["pdf_button_blue"])
 
-
     def show_atas_api(self):
         self.clear_content_area()
 
@@ -237,7 +226,6 @@ class MainWindow(QMainWindow):
         # Adiciona a QLabel ao layout de conteúdo
         self.content_layout.addWidget(label)
         self.set_active_button(self.buttons["api_azul"])  # Define o botão "Atas (API)" como ativo
-
 
     # def show_atas_api(self):
     #     self.clear_content_area()
