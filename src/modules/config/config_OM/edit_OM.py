@@ -5,8 +5,12 @@ from modules.utils.add_button import add_button_func
 from modules.utils.linha_layout import linha_divisoria_sem_spacer_layout
 from paths import ORGANIZACOES_FILE
 
+from PyQt6.QtWidgets import QLabel, QScrollArea, QVBoxLayout, QWidget
+from PyQt6.QtCore import Qt
+import json
+from paths import ORGANIZACOES_FILE
 def show_organizacoes_widget(content_layout, icons, parent):
-    """Exibe o widget para Alteração das Organizações Militares."""
+    """Exibe o widget para Alteração das Organizações Militares com funcionalidade de edição."""
     # Limpa o layout de conteúdo
     while content_layout.count():
         item = content_layout.takeAt(0)
@@ -26,11 +30,14 @@ def show_organizacoes_widget(content_layout, icons, parent):
             elif item.layout():
                 clear_layout(item.layout)
 
-    # Scroll Area
-    scroll_area = QScrollArea()
-    scroll_area.setWidgetResizable(True)
+    # Carregar dados do arquivo JSON
+    try:
+        with open(ORGANIZACOES_FILE, 'r', encoding='utf-8') as file:
+            config_data = json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        config_data = {}
 
-    # Widget principal para o conteúdo da scroll area
+    # Widget principal para o conteúdo
     scroll_widget = QWidget()
     layout = QVBoxLayout(scroll_widget)
 
@@ -39,91 +46,17 @@ def show_organizacoes_widget(content_layout, icons, parent):
     title.setStyleSheet("font-size: 20px; font-weight: bold; color: #4E648B")
     layout.addWidget(title)
 
-    # Carregar dados do arquivo JSON
-    try:
-        with open(ORGANIZACOES_FILE, 'r', encoding='utf-8') as file:
-            config_data = json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        config_data = {}
+    # Adiciona o widget de edição logo após o título
+    edit_widget = EditOMWidget("organizacoes", config_data, parent)
+    layout.addWidget(edit_widget)
 
-    # Lista de organizações militares
-    oms = [
-        "Organização Militar",
-    ]
-
-    # Criando botões para cada organização
-    for om in oms:
-        categoria = om.lower().replace(" ", "_")
-        item_layout = QVBoxLayout()
-
-        linha_divisoria = linha_divisoria_sem_spacer_layout()
-        item_layout.addWidget(linha_divisoria)
-
-        # Exibir valores existentes no JSON acima do botão
-        if categoria in config_data:
-            for item in config_data[categoria]:
-                item_label = QLabel(
-                    f"UASG: {item['UASG']} - {item['Nome']} - {item['Sigla']} - {item['Indicativo']} - {item['Cidade']}"
-                )
-                item_label.setStyleSheet("font-size: 14px; color: #E3E3E3;")
-                item_layout.addWidget(item_label)
-
-        # Layout horizontal para o botão com espaçadores laterais
-        button_layout = QHBoxLayout()
-        button_layout.addStretch()  # Espaçador à esquerda
-
-        # Botão para editar a organização
-        button = add_button_func(
-            text=om,
-            icon_name="edit",  # Substituir pelo nome do ícone correto
-            slot=partial(edit_om, om, config_data, parent),
-            layout=button_layout,
-            icons=icons,
-            tooltip=f"Editar {om}"
-        )
-
-        button_layout.addStretch()  # Espaçador à direita
-        item_layout.addLayout(button_layout)
-
-        layout.addLayout(item_layout)
-
-    # Adiciona espaçador para empurrar o conteúdo para o topo
-    layout.addStretch()
-
-    # Configura o widget no scroll area
+    # Scroll Area para incluir o layout principal
+    scroll_area = QScrollArea()
+    scroll_area.setWidgetResizable(True)
     scroll_area.setWidget(scroll_widget)
 
-    # Adiciona o scroll area ao layout principal
+    # Adiciona o Scroll Area ao layout principal
     content_layout.addWidget(scroll_area)
-
-
-def edit_om(om, config_data, parent):
-    """Função chamada ao clicar em 'Editar'."""
-    categoria = om.lower().replace(" ", "_")  # Transformar em formato adequado para JSON
-    try:
-        # Garantir que o arquivo JSON exista
-        if not ORGANIZACOES_FILE.exists():
-            with open(ORGANIZACOES_FILE, 'w', encoding='utf-8') as file:
-                json.dump({}, file, ensure_ascii=False, indent=4)
-
-        with open(ORGANIZACOES_FILE, 'r', encoding='utf-8') as file:
-            config_data = json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        config_data = {}
-
-    # Garantir que a categoria exista no dicionário
-    if categoria not in config_data:
-        config_data[categoria] = []
-
-    # Abrir o diálogo de edição
-    dialog = EditOMWidget(categoria, config_data, parent)
-    if dialog.exec():
-        # Salvar alterações no JSON
-        with open(ORGANIZACOES_FILE, 'w', encoding='utf-8') as file:
-            json.dump(config_data, file, ensure_ascii=False, indent=4)
-
-        # Atualizar o widget após salvar as alterações
-        show_organizacoes_widget(parent.content_layout, parent.icons, parent)
 
 
 class EditOMWidget(QWidget):

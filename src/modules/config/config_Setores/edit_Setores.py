@@ -115,15 +115,9 @@ def edit_om(om, config_data, parent):
     if categoria not in config_data:
         config_data[categoria] = []
 
-    # Abrir o diálogo de edição
+    # Abrir o widget de edição
     dialog = EditOMWidget(categoria, config_data, parent)
-    if dialog.exec():
-        # Salvar alterações no JSON
-        with open(ORGANIZACOES_FILE, 'w', encoding='utf-8') as file:
-            json.dump(config_data, file, ensure_ascii=False, indent=4)
-
-        # Atualizar o widget após salvar as alterações
-        show_organizacoes_widget(parent.content_layout, parent.icons, parent)
+    dialog.show()  # Usa show() em vez de exec()
 
 
 class EditOMWidget(QWidget):

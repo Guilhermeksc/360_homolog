@@ -243,6 +243,7 @@ class MainWindow(QMainWindow):
         
         # Instanciar a nova view
         indicadores_view = IndicadoresView(
+            icons = self.icons,
             db_manager=self.db_manager,
             data_atas_path=DATA_ATAS_PATH,
             data_atas_api_path=DATA_ATAS_API_PATH,
@@ -256,20 +257,17 @@ class MainWindow(QMainWindow):
         self.set_active_button(self.buttons["statistics_azul"])
     
     def show_config(self):
+        """Exibe o gerenciador de configurações."""
         self.clear_content_area()
 
-        # Criação de uma QLabel com o texto "Módulo Atas"
-        label = QLabel("Config", self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Alinhamento centralizado
-        label.setStyleSheet("""
-            font-size: 24px;
-            color: #333;
-            font-weight: bold;
-        """)  # Estilização opcional para a label
-        
-        # Adiciona a QLabel ao layout de conteúdo
-        self.content_layout.addWidget(label)
-        self.set_active_button(self.buttons["config"])  # Define o botão "Atas (API)" como ativo    
+        # Instanciar o ConfigManager com os ícones
+        self.config_manager = ConfigManager(self.icons, self)
+
+        # Adicionar o ConfigManager à área de conteúdo
+        self.content_layout.addWidget(self.config_manager)
+
+        # Define o botão correspondente como ativo
+        self.set_active_button(self.buttons["config"])
 
     def show_inicio(self):
         self.clear_content_area()
@@ -291,8 +289,7 @@ class MainWindow(QMainWindow):
             self.content_layout.addWidget(self.inicio_widget )
 
         # Define o botão "ata" como ativo
-        self.set_active_button(self.buttons["init"])    
-        
+        self.set_active_button(self.buttons["init"]) 
         
     # ====== ÁREA DE CONTEÚDO ======
 

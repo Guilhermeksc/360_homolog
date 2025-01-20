@@ -231,7 +231,7 @@ class GerarAtaWidget(QWidget):
                 data = json.load(file)
 
             # Extração de dados únicos
-            organizacoes = data.get("organização_militar", [])
+            organizacoes = data.get("organizacoes", [])
             cidades = {org.get("Cidade") for org in organizacoes if "Cidade" in org}
             organizacoes_formatadas = {f"{org.get('Nome')} ({org.get('Sigla')})" 
                                        for org in organizacoes if "Nome" in org and "Sigla" in org}

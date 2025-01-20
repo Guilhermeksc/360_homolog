@@ -3,11 +3,13 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 import pandas as pd
 import os
+from modules.utils.add_button import add_button_func
 
 class IndicadoresView(QWidget):
-    def __init__(self, db_manager, data_atas_path, data_atas_api_path, parent=None):
+    def __init__(self, icons, db_manager, data_atas_path, data_atas_api_path, parent=None):
         super().__init__(parent)
 
+        self.icon_cache = icons
         self.db_manager = db_manager
         self.data_atas_path = data_atas_path
         self.data_atas_api_path = data_atas_api_path
@@ -20,54 +22,75 @@ class IndicadoresView(QWidget):
         self.layout.setContentsMargins(10, 10, 10, 10)
         self.layout.setSpacing(15)
 
-        # Título da interface
-        label = QLabel("Indicadores", self)
-        label.setStyleSheet("font-size: 26px; font-weight: bold;")
-        self.layout.addWidget(label)
-
-        # Layout horizontal para os comboboxes
-        self.selector_layout = QHBoxLayout()
+        label_title = QLabel("Indicadores", self)
+        label_title.setStyleSheet("font-size: 26px; font-weight: bold;")
+        self.layout.addWidget(label_title)
         
+        self.selector_layout = QHBoxLayout()   
+
+        self.select_db = QVBoxLayout()
+                              
         # Rótulo de instrução
-        self.label = QLabel("Selecione o banco de dados e a tabela para visualização:", self)
+        self.label = QLabel("Selecione a tabela para visualização:", self)
         self.label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.label.setFont(QFont('Arial', 12))
-        self.selector_layout.addWidget(self.label)
-
-        # Combobox para selecionar o banco de dados
+        self.select_db.addWidget(self.label)     
+        
         self.db_selector = QComboBox(self)
         self.db_selector.addItem("Controle Atas", self.data_atas_path)
         self.db_selector.addItem("Controle Atas API", self.data_atas_api_path)
         self.db_selector.currentIndexChanged.connect(self.update_table_selector)
         self.db_selector.setFont(QFont('Arial', 12))
-        self.db_selector.setFixedWidth(200)
-        self.selector_layout.addWidget(self.db_selector)
-
+        self.db_selector.setFixedWidth(250)
+        self.select_db.addWidget(self.db_selector)
+  
         # Combobox para selecionar a tabela
         self.table_selector = QComboBox(self)
         self.table_selector.currentIndexChanged.connect(self.load_table_data)
         self.table_selector.setFont(QFont('Arial', 12))
-        self.selector_layout.addWidget(self.table_selector)
-
-        self.layout.addLayout(self.selector_layout)
-
+        self.table_selector.setFixedWidth(250)
+        self.select_db.addWidget(self.table_selector)
+        
+        self.selector_layout.addLayout(self.select_db) 
+          
+        # Adicionar QLabel para contadores
+        self.count_label = QLabel("", self)
+        self.count_label.setFont(QFont('Arial', 14))
+        self.count_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.selector_layout.addWidget(self.count_label)  # Adiciona no layout principal
+        
+        self.indicadores_layout = QVBoxLayout()
         # Indicador de Economicidade
         economicidade_label = QLabel("Indicador de Economicidade")
         economicidade_label.setFont(QFont('Arial', 12, QFont.Weight.Bold))
         economicidade_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(economicidade_label)
+        self.indicadores_layout.addWidget(economicidade_label)
 
         # Cálculo do indicador de economicidade
         self.economicidade_percentual = QLabel("0.00% de economia média")
         self.economicidade_percentual.setFont(QFont('Arial', 14))
         self.economicidade_percentual.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.layout.addWidget(self.economicidade_percentual)
+        self.indicadores_layout.addWidget(self.economicidade_percentual)
 
-        # Botão para gerar e abrir a tabela Excel
-        gerar_tabela_button = QPushButton("Gerar Tabela XLSX")
-        gerar_tabela_button.clicked.connect(self.gerar_tabela_excel)
-        self.layout.addWidget(gerar_tabela_button)
-        
+        button_layout = QHBoxLayout()  # Layout horizontal para o botão
+        button_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Centraliza o conteúdo do layout
+
+        add_button_func(
+            text="Gerar Tabela",
+            icon_name="excel",
+            slot=self.gerar_tabela_excel,
+            layout=button_layout,  # Adiciona o botão ao layout centralizado
+            icons=self.icon_cache,
+            tooltip="Clique para gerar a tabela com os dados",
+            button_size=(150, 30)
+        )
+
+        self.indicadores_layout.addLayout(button_layout) 
+
+        self.selector_layout.addLayout(self.indicadores_layout)
+
+        self.layout.addLayout(self.selector_layout)
+                        
         # Tabela para exibir os dados (usando QTableView com modelo dinâmico)
         self.table_view = QTableView(self)
         self.table_view.setStyleSheet(
@@ -107,6 +130,7 @@ class IndicadoresView(QWidget):
         else:
             QMessageBox.warning(self, "Aviso", "Não há tabelas disponíveis que comecem com 'result'.")
 
+
     def load_table_data(self):
         """Carrega os dados da tabela selecionada e atualiza a exibição."""
         selected_table = self.table_selector.currentText()
@@ -122,6 +146,39 @@ class IndicadoresView(QWidget):
 
         self.update_table(dataframe)
         self.update_economicidade(dataframe)
+        self.update_chart(dataframe)  
+        
+    def update_chart(self, dataframe):
+        """Atualiza os contadores com base nos dados e exibe na QLabel (self.count_label)."""
+        if len(dataframe.columns) <= 14:
+            QMessageBox.warning(self, "Aviso", "O DataFrame não possui o índice 14.")
+            return
+
+        # Obtém os valores da coluna pelo índice 14
+        column_data = dataframe.iloc[:, 14]
+
+        # Conta os tipos de itens encontrados
+        counts = column_data.value_counts()
+        total_count = column_data.count()
+
+        if total_count == 0:
+            text = "Nenhum item encontrado."
+        else:
+            # Formata os resultados
+            text = ""
+            for item, count in counts.items():
+                percentage = (count / total_count) * 100
+                text += f"{item}: {count} itens ({percentage:.2f}%)\n"
+            
+            # Adiciona o total de itens
+            text += f"\nTotal de itens: {total_count}"
+
+        # Exibe o texto na QLabel
+        self.count_label.setText(text)
+        self.count_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.count_label.setFont(QFont('Arial', 12))
+
+
 
     def update_table(self, dataframe):
         """Atualiza a exibição da tabela com os dados do DataFrame usando QTableView."""

@@ -6,7 +6,12 @@ __pycache__/
 *dist/
 *venv/
 *.docx
-
+*.exe
+*.toc
+*.zip
+*.pkg
+*.pyz
 # Ignore all content in src/assets/pdf
 src/database/pdf/
 relatorios/
+build/

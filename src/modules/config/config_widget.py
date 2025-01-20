@@ -49,7 +49,7 @@ class ConfigManager(QWidget):
         buttons = [
             ("Agentes Responsáveis", self.show_agentes_responsaveis_widget),
             ("Organizações Militares", self.show_organizacoes_widget),
-            ("Setores Requisitantes", self.show_setores_requisitantes_widget),
+            # ("Setores Requisitantes", self.show_setores_requisitantes_widget),
             # ("Database", self.gerenciar_inclusao_exclusao_contratos_widget),
         ]
 
@@ -77,7 +77,7 @@ class ConfigManager(QWidget):
         self.content_widget = QWidget()
         self.content_layout = QVBoxLayout(self.content_widget)
 
-        main_layout.addWidget(self.content_widget, stretch=3)
+        main_layout.addWidget(self.content_widget, stretch=4)
 
     def set_selected_button(self, selected_button):
         """Define o botão selecionado no menu lateral."""
@@ -150,10 +150,15 @@ class ConfigManager(QWidget):
             # Exibir valores existentes no JSON acima do botão
             if categoria in config_data:
                 for item in config_data[categoria]:
-                    item_label = QLabel(
-                        f"{item['Nome']} - {item['Posto']} - {item['Abreviacao']} - {item['Funcao']}"
-                    )
-                    item_label.setStyleSheet("font-size: 14px; color: #E3E3E3;")
+                    if isinstance(item, dict):  # Verifica se o item é um dicionário
+                        item_label = QLabel(
+                            f"{item.get('Nome', 'N/A')} - {item.get('Posto', 'N/A')} - "
+                            f"{item.get('Abreviacao', 'N/A')} - {item.get('Funcao', 'N/A')}"
+                        )
+                    else:
+                        # Tratamento para itens inválidos no JSON
+                        item_label = QLabel(f"Item inválido: {item}")
+                    item_label.setStyleSheet("font-size: 14px; color: #000;")
                     item_layout.addWidget(item_label)
 
             # Layout horizontal para o botão com espaçadores laterais
@@ -167,7 +172,8 @@ class ConfigManager(QWidget):
                 slot=partial(self.edit_agent, agente),  # Passa o nome do agente para a função
                 layout=button_layout,
                 icons=self.icons,
-                tooltip=f"Editar {agente}"
+                tooltip=f"Editar {agente}",
+                button_size=(300, 40)
             )
 
             button_layout.addStretch()  # Espaçador à direita
@@ -217,23 +223,3 @@ class ConfigManager(QWidget):
 
     def show_setores_requisitantes_widget(self):
         show_setores_widget(self.content_layout, self.icons, self)
-        
-        # self.clear_content()
-        # layout = QVBoxLayout()
-        # title = QLabel("Alteração dos Setores Requisitantes")
-        # title.setStyleSheet("font-size: 20px; font-weight: bold; color: #4E648B")
-        # layout.addWidget(title)
-
-        # # Adiciona o espaçador para empurrar o conteúdo para cima
-        # layout.addStretch()
-        # self.content_layout.addLayout(layout)
-
-    # def gerenciar_inclusao_exclusao_contratos_widget(self):
-    #     """Gere e exibe o widget ContratosManager dinamicamente."""
-    #     self.clear_content()
-        
-    #     # Recria o ContratosManager se ele não existir ou foi deletado
-    #     self.contratos_manager = ContratosManager(self.icons, dados={})
-        
-    #     # Adiciona o ContratosManager ao layout de conteúdo
-    #     self.content_layout.addWidget(self.contratos_manager)
