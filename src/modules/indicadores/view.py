@@ -4,6 +4,9 @@ from PyQt6.QtCore import *
 import pandas as pd
 import os
 from modules.utils.add_button import add_button_func
+import sys
+import subprocess
+from pathlib import Path
 
 class IndicadoresView(QWidget):
     def __init__(self, icons, db_manager, data_atas_path, data_atas_api_path, parent=None):
@@ -307,9 +310,9 @@ class IndicadoresView(QWidget):
                                                 / df_homologado['valor_estimado']) * 100
         return df_homologado['percentual_desconto'].mean()
 
-
     def gerar_tabela_excel(self):
         """Gera e abre uma tabela Excel com valores de economicidade usando fórmulas."""
+
         selected_table = self.table_selector.currentText()
         selected_db_path = self.db_selector.currentData()
 
@@ -325,10 +328,31 @@ class IndicadoresView(QWidget):
         df_homologado = dataframe[dataframe['situacao'] == 'Adjudicado e Homologado'].copy()
         df_homologado = df_homologado[['item', 'descricao', 'valor_estimado', 'valor_homologado_item_unitario']].copy()
 
-        file_path, _ = QFileDialog.getSaveFileName(self, "Salvar Tabela", "", "Excel Files (*.xlsx)")
+        # Obtém o caminho da Área de Trabalho de acordo com o sistema operacional
+        if sys.platform == "win32":
+            desktop_path = Path.home() / "Desktop"
+        elif sys.platform == "darwin":  # macOS
+            desktop_path = Path.home() / "Desktop"
+        else:  # Linux (Ubuntu, Debian, etc.)
+            desktop_path = Path.home() / "Área de Trabalho"
+            if not desktop_path.exists():  # Algumas distros usam "Desktop" em inglês
+                desktop_path = Path.home() / "Desktop"
 
-        if file_path:
+        file_path = desktop_path / "indicador.xlsx"
+
+        try:
             with pd.ExcelWriter(file_path, engine='xlsxwriter') as writer:
                 df_homologado.to_excel(writer, index=False, sheet_name='Indicador')
 
-            os.startfile(file_path)
+            QMessageBox.information(self, "Sucesso", f"O arquivo foi salvo em:\n{file_path}")
+
+            # Abrir o arquivo no sistema operacional correspondente
+            if sys.platform == "win32":
+                os.startfile(file_path)
+            elif sys.platform == "darwin":  # macOS
+                subprocess.Popen(["open", file_path])
+            else:  # Linux (Ubuntu, Debian, etc.)
+                subprocess.Popen(["xdg-open", file_path])
+
+        except Exception as e:
+            QMessageBox.critical(self, "Erro", f"Erro ao salvar o arquivo:\n{e}")

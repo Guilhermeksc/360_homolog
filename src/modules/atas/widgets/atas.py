@@ -16,6 +16,8 @@ from paths import PRE_DEFINICOES_JSON, TEMPLATE_PATH, ORGANIZACOES_FILE, AGENTES
 import json
 from modules.utils.add_button import add_button_func_vermelho
 import os
+import sys
+import subprocess
 from PyQt6.QtSql import QSqlQuery
 
 from modules.utils.linha_layout import linha_divisoria_layout
@@ -383,8 +385,14 @@ class GerarAtaWidget(QWidget):
 
         # Abrir o diretório principal onde as subpastas foram criadas
         if hasattr(self, 'pasta_principal_criada') and self.pasta_principal_criada:
-            os.startfile(self.pasta_principal_criada)
-
+            path = str(self.pasta_principal_criada)
+            
+            if sys.platform == "win32":  # Windows
+                os.startfile(path)
+            elif sys.platform == "darwin":  # macOS
+                subprocess.Popen(["open", path])
+            else:  # Linux (Ubuntu, Debian, etc.)
+                subprocess.Popen(["xdg-open", path])
 
     def processar_ata_de_registro_de_precos(self, header_text, cidade, organizacao, ordenador_despesas, numero_controle, dataframe):
         print(f"Tipo em processar_ata_de_registro_de_precos: {type(dataframe)}")
@@ -538,16 +546,26 @@ class GerarAtaWidget(QWidget):
         max_len = 40
         contrato_limpo = self.limpar_nome_empresa(num_contrato)[:max_len].rstrip()
 
-        tpl = DocxTemplate(TEMPLATE_PATH)
-        tpl.render(context)
+        template_path = Path(TEMPLATE_PATH)
+        if not template_path.exists():
+            QMessageBox.critical(self, "Erro", f"O template '{template_path}' não foi encontrado.\nVerifique o caminho e tente novamente.")
+            return
 
-        nome_documento = f"{contrato_limpo}.docx"
-        path_documento = path_subpasta / nome_documento
+        try:
+            tpl = DocxTemplate(template_path)
+            tpl.render(context)
 
-        # Salvar o documento e incluir informações detalhadas
-        tpl.save(path_documento)
-        self.alterar_documento_criado(path_documento, registro, registro["cnpj"], itens_relacionados)
-        self.salvar_email(path_subpasta, context, registro)
+            nome_documento = f"{contrato_limpo}.docx"
+            path_documento = path_subpasta / nome_documento
+
+            # Salvar o documento e incluir informações detalhadas
+            tpl.save(path_documento)
+            self.alterar_documento_criado(path_documento, registro, registro["cnpj"], itens_relacionados)
+            self.salvar_email(path_subpasta, context, registro)
+        
+        except Exception as e:
+            QMessageBox.critical(self, "Erro", f"Ocorreu um erro ao salvar o documento:\n{e}")
+
 
     def salvar_email(self, path_subpasta, context, registro):
         nome_arquivo_txt = "E-mail.txt"

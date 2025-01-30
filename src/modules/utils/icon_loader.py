@@ -25,7 +25,7 @@ def load_icon(icon_name):
 # Funções específicas para carregar ícones usados frequentemente
 def load_icons():
     return {
-        "api_azul": load_icon("api_azul.png"),    
+        "api_azul": load_icon("API_azul.png"),    
         "statistics_azul": load_icon("statistics_azul.png"),
         "pdf_button": load_icon("pdf_button.png"),
         "pdf_button_blue": load_icon("pdf_button_blue.png"),

@@ -7,6 +7,9 @@ import pandas as pd
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 import logging  
 import sqlite3
+import sys
+import subprocess
+
 class GerarAtasModel(QObject):
     tabelaCarregada = pyqtSignal() 
 
@@ -201,16 +204,22 @@ class CustomSqlTableModel(QSqlTableModel):
     def abrir_tabela_nova(self):
         # Define o caminho do arquivo Excel
         file_path = os.path.join(os.getcwd(), "tabela_nova.xlsx")
-        
+
         # Cria um DataFrame vazio com as colunas especificadas
         df = pd.DataFrame(columns=["item", "catalogo", "descricao", "descricao_detalhada"])
-        
+
         try:
             # Tenta salvar o DataFrame no arquivo Excel
             df.to_excel(file_path, index=False)
-            
-            # Abre o arquivo Excel após a criação (opcional)
-            os.startfile(file_path)
+
+            # Abre o arquivo Excel após a criação
+            if sys.platform == "win32":
+                os.startfile(file_path)
+            elif sys.platform == "darwin":  # macOS
+                subprocess.Popen(["open", file_path])
+            else:  # Linux
+                subprocess.Popen(["xdg-open", file_path])
+
         except PermissionError:
             # Mostra uma mensagem para o usuário caso o arquivo já esteja aberto
             QMessageBox.warning(None, "Aviso", "O arquivo 'tabela_nova.xlsx' já está aberto. Por favor, feche-o e tente novamente.")

@@ -116,10 +116,19 @@ class ProcessamentoWidget(QWidget):
         main_layout.addLayout(button_layout)
 
     def abrir_pasta_pdf(self):
-        if self.pdf_dir.exists() and self.pdf_dir.is_dir():
+        # Garante que a pasta exista
+        if not self.pdf_dir.exists():
+            try:
+                self.pdf_dir.mkdir(parents=True, exist_ok=True)
+            except Exception as e:
+                QMessageBox.critical(self, "Erro", f"Falha ao criar o diretório PDF: {e}")
+                return
+
+        # Abre a pasta PDF
+        if self.pdf_dir.is_dir():
             QDesktopServices.openUrl(QUrl.fromLocalFile(str(self.pdf_dir)))
         else:
-            QMessageBox.warning(self, "Erro", "O diretório PDF atual não existe.")
+            QMessageBox.warning(self, "Erro", "O diretório PDF não é válido.")
 
     def definir_pasta_pdf_padrao(self):
         folder = QFileDialog.getExistingDirectory(self, "Defina a Pasta PDF Padrão")
