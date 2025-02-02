@@ -17,6 +17,10 @@ from modules.atas_api.view import GerarAtasApiView
 from modules.atas_api.model import GerarAtasApiModel
 from modules.atas_api.controller import GerarAtasApiController
 
+from modules.dispensa.view import DispensaEletronicaWidget
+from modules.dispensa.model import DispensaEletronicaModel
+from modules.dispensa.controller import DispensaEletronicaController
+
 # from modules.atas.classe_atas import AtasWidget
 # from modules.pca.models import PCAModel  # Exemplo para PCA
 # from modules.atas.models import AtasModel  # Exemplo para Atas
@@ -30,28 +34,34 @@ __all__ = [
     "InicioWidget",
     # "PNCPWidget",
     # "LicitacaoWidget",
-    # "DispensaEletronicaWidget",
+    # 
     # "DashboardWidget",
-    "GerarAtasView",
+
     "GerarAtasApiView",
+    "GerarAtasApiModel",
+    "GerarAtasApiController",
     "IndicadoresView",
     # "AtasWidget",
     # "ContratosView",
     
-    # Models
-    # "DispensaEletronicaModel",
-    # "LicitacaoModel",
+    "DispensaEletronicaController",
+    "DispensaEletronicaWidget",
+    "DispensaEletronicaModel",
+
+    "GerarAtasView",
     "GerarAtasModel",
-    "GerarAtasApiModel",
+    "GerarAtasController",
+
+    
     # "ContratosModel",
     # "PCAModel",
     # "AtasModel",
 
     # Controllers
-    # "DispensaEletronicaController",
+    
     # "LicitacaoController",
-    "GerarAtasController",
-    "GerarAtasApiController",
+
+
     # "ContratosController",
 
     # Utils

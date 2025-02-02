@@ -7,6 +7,7 @@ import pandas as pd
 from PyQt6.QtSql import QSqlDatabase, QSqlTableModel, QSqlQuery
 import logging  
 import sqlite3
+
 class GerarAtasApiModel(QObject):
     tabelaCarregada = pyqtSignal() 
 

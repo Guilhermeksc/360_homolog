@@ -104,23 +104,23 @@ def setup_search_bar(icons, layout, proxy_model):
 
     search_bar = QLineEdit()
     search_bar.setPlaceholderText("Digite para buscar...")
-    search_bar.setStyleSheet("""
-        QLineEdit {
-            background-color: #13141F;
-            color: #8AB4F7;
-            font-size: 14px;
-            font-weight: bold;
-            padding: 8px;
-            border: 1px solid #8AB4F7;
-            border-radius: 5px;
-        }
-        QLineEdit:focus {
-            border: 1px solid #8AB4F7;
-            background-color: #181928;
-            color: #FFFFFF;
-            border-radius: 5px;
-        }
-    """)
+    # search_bar.setStyleSheet("""
+    #     QLineEdit {
+    #         background-color: #13141F;
+    #         color: #8AB4F7;
+    #         font-size: 14px;
+    #         font-weight: bold;
+    #         padding: 8px;
+    #         border: 1px solid #8AB4F7;
+    #         border-radius: 5px;
+    #     }
+    #     QLineEdit:focus {
+    #         border: 1px solid #8AB4F7;
+    #         background-color: #181928;
+    #         color: #FFFFFF;
+    #         border-radius: 5px;
+    #     }
+    # """)
     search_bar.textChanged.connect(lambda text: on_search_text_changed(text, proxy_model))
     layout.addWidget(search_bar)
 

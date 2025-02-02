@@ -4,6 +4,12 @@ from .base_path import JSON_DIR, DATABASE_DIR, CONFIG_FILE
 from pathlib import Path
 import json
 
+def load_config_path_id():
+    if not Path(CONFIG_FILE).exists():
+        return {}
+    with open(CONFIG_FILE, 'r') as file:
+        return json.load(file)
+
 def load_config(key, default_value):
     try:
         with open(CONFIG_FILE, 'r') as f:

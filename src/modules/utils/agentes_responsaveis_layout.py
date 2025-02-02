@@ -15,12 +15,7 @@ def create_combo_box(current_text, items, fixed_width, fixed_height):
         QComboBox {
             padding: 5px;
         }
-        QComboBox:hover {
-            background-color: #181928; 
-        }
-        QComboBox QAbstractItemView { 
-            background-color: #181928; 
-        }
+
     """)
     
     # Define o cursor de mão para o combo box e sua lista de opções

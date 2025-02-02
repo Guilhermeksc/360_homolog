@@ -1,5 +1,4 @@
 from PyQt6.QtCore import *
-from paths import CONTROLE_DADOS_ATA
 
 class GerarAtasController(QObject): 
     def __init__(self, icons, view, model):
@@ -7,7 +6,6 @@ class GerarAtasController(QObject):
         self.icons = icons
         self.view = view
         self.model = model.setup_model("controle_atas")
-        self.controle_om = CONTROLE_DADOS_ATA  # Atribui o caminho diretamente ao controle_om                
         self.setup_connections()
 
     def setup_connections(self):

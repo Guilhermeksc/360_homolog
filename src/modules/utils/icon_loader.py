@@ -33,7 +33,8 @@ def load_icons():
         "info": load_icon("info.png"),
         "360-degrees": load_icon("360-degrees.png"),
         "loading-arrow": load_icon("loading-arrow.png"),
-        
+        "plan_dispensa": load_icon("plan_dispensa.png"),
+        "plan_dispensa_blue": load_icon("plan_dispensa_blue.png"),
         
         "priority": load_icon("priority.png"),
         "head_skull": load_icon("head_skull.png"),
