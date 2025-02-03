@@ -35,7 +35,8 @@ def load_icons():
         "loading-arrow": load_icon("loading-arrow.png"),
         "plan_dispensa": load_icon("plan_dispensa.png"),
         "plan_dispensa_blue": load_icon("plan_dispensa_blue.png"),
-        
+        "contrato": load_icon("contrato.png"),
+        "contrato_blue": load_icon("contrato_blue.png"),
         "priority": load_icon("priority.png"),
         "head_skull": load_icon("head_skull.png"),
         "like": load_icon("like.png"),

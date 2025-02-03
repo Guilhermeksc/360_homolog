@@ -70,6 +70,7 @@ class MainWindow(QMainWindow):
             ("pdf_button_blue", "pdf_button", "Atas (PDF)", self.show_atas),
             ("api_azul", "api", "Atas (API)", self.show_atas_api),
             ("plan_dispensa_blue", "plan_dispensa", "Dispensa Eletrônica", self.show_dispensa),
+            ("contrato_blue", "contrato", "Contratos", self.show_contratos),
             ("statistics_azul", "statistics", "Indicadores", self.show_indicadores),                        
             ("config", "config_hover", "Configurações", self.show_config),
         ]
@@ -276,6 +277,25 @@ class MainWindow(QMainWindow):
         self.content_layout.addWidget(self.dispensa_widget)
         self.set_active_button(self.buttons["plan_dispensa_blue"])
 
+    def show_contratos(self):
+        self.clear_content_area()
+        
+        # Instancia o modelo de Dispensa Eletrônica com o caminho do banco de dados
+        self.contratos_model = ContratosModel(DATA_CONTRATOS_PATH)
+        
+        # Configura o modelo SQL
+        sql_model = self.contratos_model.setup_model("controle_contratos", editable=True)
+        
+        # Cria o widget de Dispensa Eletrônica e passa o modelo SQL e o caminho do banco de dados
+        self.contratos_view = ContratosView(self.icons, sql_model, self.contratos_model.database_manager.db_path)
+
+        # Cria o controlador e passa o widget e o modelo
+        self.controller_contratos = ContratosController(self.icons, self.contratos_view, self.contratos_model)
+
+        # Adiciona o widget de Dispensa Eletrônica na área de conteúdo
+        self.content_layout.addWidget(self.contratos_view)
+        self.set_active_button(self.buttons["contrato_blue"])
+        
     def show_config(self):
         """Exibe o gerenciador de configurações."""
         self.clear_content_area()

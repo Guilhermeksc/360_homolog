@@ -16,7 +16,7 @@ import pandas as pd
 import os
 import subprocess
 import sqlite3
-from paths import DATA_DISPENSA_ELETRONICA_PATH, CONTROLE_DADOS, load_config_path_id
+from paths import AGENTES_RESPONSAVEIS_FILE, DATA_DISPENSA_ELETRONICA_PATH, ORGANIZACOES_FILE, load_config_path_id
 
 def number_to_text(number):
     numbers_in_words = ["um", "dois", "três", "quatro", "cinco", "seis", "sete", "oito", "nove", "dez", "onze", "doze"]
@@ -30,17 +30,13 @@ class EditarDadosWindow(QMainWindow):
     pastas_existentes = pyqtSignal(str, QIcon)
     formulario_carregado = pyqtSignal(pd.DataFrame)
     
-    def __init__(self, dados, icons, total_homologado=0, count_anulado_fracassado=0, count_informado=0, table_name="", parent=None):
+    def __init__(self, dados, icons, table_name="", parent=None):
     # def __init__(self, dados, icons, parent=None):
         super().__init__(parent)
         self.dados = dados
         self.icons = icons
-        
-        self._df = pd.DataFrame()
+
         # Armazena os valores passados
-        self.total_homologado = total_homologado
-        self.count_anulado_fracassado = count_anulado_fracassado
-        self.count_informado = count_informado
         self.table_name = table_name
         self.dados_api = None 
 
@@ -49,11 +45,10 @@ class EditarDadosWindow(QMainWindow):
         # self.formulario_carregado.connect(self.on_formulario_carregado)
 
         # Configurações gerais da janela
-        self.setWindowTitle("Editar Dados")
-        self.setWindowIcon(self.icons.get("edit", None))
-        self.setFixedSize(1150, 680)
+        self.setWindowTitle("Edição de dados da Dispensa Eletrônica")
+        self.setWindowIcon(self.icons.get("plan_dispensa", None))
+        self.setFixedSize(1150, 620)
         self.move(0, 0)  # Posicionar no canto superior esquerdo da tela
-
 
         # Carrega todas as referências e widgets
         self.carregar_referencias()
@@ -83,7 +78,8 @@ class EditarDadosWindow(QMainWindow):
         self.widgets_map = {}
         self.database_path_api = DATA_DISPENSA_ELETRONICA_PATH
         # Configurações de caminho e base de dados
-        self.database_path = CONTROLE_DADOS
+        self.database_path = ORGANIZACOES_FILE
+        self.agentes_resposaveis_json_path = AGENTES_RESPONSAVEIS_FILE
         self.config = load_config_path_id()
         self.pasta_base = Path(self.config.get('pasta_base', str(Path.home() / 'Desktop')))
         # Consolidador de documentos
@@ -182,13 +178,14 @@ class EditarDadosWindow(QMainWindow):
             agente_responsavel_layout.addLayout(h_layout)
 
         # Carrega os agentes responsáveis para popular os ComboBoxes
-        carregar_agentes_responsaveis(self.database_path, {
+        carregar_agentes_responsaveis(self.agentes_resposaveis_json_path, {
             "Ordenador de Despesa%": self.ordenador_combo,
             "Agente Fiscal%": self.agente_fiscal_combo,
             "Gerente de Crédito%": self.gerente_credito_combo,
             "Operador%": self.operador_dispensa_combo,
             "NOT LIKE": self.responsavel_demanda_combo
         })
+
 
         # Define o valor inicial de cada ComboBox com os dados passados em `data`
         self.ordenador_combo.setCurrentText(self.dados.get('ordenador_despesas', ''))
@@ -365,26 +362,29 @@ class EditarDadosWindow(QMainWindow):
                 background-color: #F0F0F0;
                 color: #5A5A5A;
                 border: 2px solid transparent;
-                border-radius: 8px;
-                font-size: 14px;
-                padding: 10px 15px;
-                transition: all 0.3s ease-in-out;
+                font-weight: bold;
+                padding: 0px 15px;
             }
             QPushButton[class="nav-button"]:hover {
                 background-color: #E0E8F8;
                 color: #333;
                 border: 2px solid #3A3E5B;
+                font-weight: bold;
+                padding: 0px 15px;                           
             }
             QPushButton[class="nav-button"]:pressed {
                 background-color: #D0D8F0;
                 color: #222;
                 border: 2px solid #3A3E5B;
+                font-weight: bold;
+                padding: 0px 15px;                           
             }
             QPushButton[class="nav-button selected"] {
                 background-color: #3A3E5B;
                 color: #FFFFFF;
                 border: 2px solid #2A2D4F;
                 font-weight: bold;
+                padding: 0px 15px;
             }
         """)
 
@@ -454,6 +454,45 @@ class EditarDadosWindow(QMainWindow):
 
         contratacao_layout = QVBoxLayout()
 
+        hlayout_selecao_om = QHBoxLayout()
+
+        om_layout, self.om_combo = create_selecao_om_layout(
+            self.database_path,
+            dados=self.dados,
+            load_sigla_om_callback=load_sigla_om,
+            on_om_changed_callback=lambda om_combo, dados, db_path: on_om_changed(self, om_combo, dados, db_path)
+        )
+
+        hlayout_selecao_om.addLayout(om_layout)
+        contratacao_layout.addLayout(hlayout_selecao_om)
+
+        hlayout_selecao_setor_responsavel = QHBoxLayout()
+
+        divisao_label = QLabel("Setor Responsável:")
+
+        # Criando o QComboBox editável
+        self.setor_responsavel_combo = QComboBox()
+        self.setor_responsavel_combo .setStyleSheet("font-size: 14px")
+        self.setor_responsavel_combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        # Adicionando as opções ao ComboBox
+        divisoes = [
+            "Divisão de Abastecimento",
+            "Divisão de Finanças",
+            "Divisão de Obtenção",
+            "Divisão de Pagamento",
+            "Divisão de Administração",
+            "Divisão de Subsistência"
+        ]
+        self.setor_responsavel_combo .addItems(divisoes)
+
+        # Definindo o texto atual com base nos dados fornecidos
+        self.setor_responsavel_combo .setCurrentText(self.dados.get('setor_responsavel', 'Selecione a Divisão'))
+
+        hlayout_selecao_setor_responsavel.addWidget(divisao_label)
+        hlayout_selecao_setor_responsavel.addWidget(self.setor_responsavel_combo)
+
+        contratacao_layout.addLayout(hlayout_selecao_setor_responsavel)
+
         # Campo de Objeto
         objeto_layout = QHBoxLayout()
         objeto_label = QLabel("Objeto:")
@@ -512,6 +551,8 @@ class EditarDadosWindow(QMainWindow):
         # Configuração do DateEdit com a data inicial
         self.data_edit = QDateEdit()
         self.data_edit.setStyleSheet("font-size: 14px")
+        self.data_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.data_edit.setCalendarPopup(True)
         data_sessao_str = self.dados.get('data_sessao', '')
         if data_sessao_str:
@@ -550,6 +591,7 @@ class EditarDadosWindow(QMainWindow):
         self.radio_material.setChecked(material_servico == "Material")
 
         material_servico_layout.addWidget(material_servico_label)
+        material_servico_layout.addStretch()
         material_servico_layout.addWidget(self.radio_material)
         material_servico_layout.addWidget(self.radio_servico)
         contratacao_layout.addLayout(material_servico_layout)
@@ -571,6 +613,7 @@ class EditarDadosWindow(QMainWindow):
         self.radio_disputa_nao.setChecked(com_disputa_value == 'Não')
 
         disputa_layout.addWidget(disputa_label)
+        disputa_layout.addStretch()
         disputa_layout.addWidget(self.radio_disputa_sim)
         disputa_layout.addWidget(self.radio_disputa_nao)
         contratacao_layout.addLayout(disputa_layout)
@@ -589,31 +632,32 @@ class EditarDadosWindow(QMainWindow):
         self.radio_pesquisa_nao.setChecked(pesquisa_preco_value == 'Não')
 
         pesquisa_layout.addWidget(pesquisa_label)
+        pesquisa_layout.addStretch()
         pesquisa_layout.addWidget(self.radio_pesquisa_sim)
         pesquisa_layout.addWidget(self.radio_pesquisa_nao)
         contratacao_layout.addLayout(pesquisa_layout)
 
-        # Layout para CNPJ
-        cnpj_layout = QHBoxLayout() 
-        label_cnpj = QLabel("CNPJ Matriz:", self)
-        label_cnpj.setStyleSheet("font-size: 16px")
-        cnpj_layout.addWidget(label_cnpj)
-        self.cnpj_edit = QLineEdit(str(self.dados.get('cnpj_matriz', '00394502000144')))
-        cnpj_layout.addWidget(self.cnpj_edit)
-        contratacao_layout.addLayout(cnpj_layout)
+        # Adicionando o rádio button de Atividade de Custeio
+        custeio_layout = QHBoxLayout()
+        custeio_label = QLabel("Atividade de Custeio?")
+        self.radio_custeio_sim = QRadioButton("Sim")
+        self.radio_custeio_nao = QRadioButton("Não")
+        custeio_group = QButtonGroup()  # Grupo exclusivo para o conjunto de botões
+        custeio_group.addButton(self.radio_custeio_sim)
+        custeio_group.addButton(self.radio_custeio_nao)
 
-        # Layout para Sequencial PNCP
-        sequencial_layout = QHBoxLayout()
-        label_sequencial = QLabel("Sequencial PNCP:", self)
-        label_sequencial.setStyleSheet("font-size: 16px")
-        sequencial_layout.addWidget(label_sequencial)
-        self.sequencial_edit = QLineEdit(str(self.dados.get('sequencial_pncp', '')))
-        self.sequencial_edit.setPlaceholderText("Digite o Sequencial PNCP")
-        sequencial_layout.addWidget(self.sequencial_edit)
-        contratacao_layout.addLayout(sequencial_layout)
+        # Define o estado inicial com base nos dados
+        atividade_custeio_value = self.dados.get('atividade_custeio', 'Não')
+        self.radio_custeio_sim.setChecked(atividade_custeio_value == 'Sim')
+        self.radio_custeio_nao.setChecked(atividade_custeio_value == 'Não')
 
-        # contratacao_layout.addWidget(btn_consultar)
-        add_button_func("Consultar", "api", self.emit_request_consulta_api, contratacao_layout, self.icons, tooltip="Salvar os Dados")
+        custeio_layout.addWidget(custeio_label)
+        custeio_layout.addStretch()
+        custeio_layout.addWidget(self.radio_custeio_sim)
+        custeio_layout.addWidget(self.radio_custeio_nao)
+        
+        # Adiciona o layout do rádio button ao layout principal
+        contratacao_layout.addLayout(custeio_layout)
 
         # # Configura layout do GroupBox
         contratacao_group_box.setLayout(contratacao_layout)
@@ -671,26 +715,6 @@ class EditarDadosWindow(QMainWindow):
         ptres_layout.addWidget(self.ptres_edit)
         layout.addLayout(ptres_layout)
 
-        # Adicionando o rádio button de Atividade de Custeio
-        custeio_layout = QHBoxLayout()
-        custeio_label = QLabel("Atividade de Custeio?")
-        self.radio_custeio_sim = QRadioButton("Sim")
-        self.radio_custeio_nao = QRadioButton("Não")
-        custeio_group = QButtonGroup()  # Grupo exclusivo para o conjunto de botões
-        custeio_group.addButton(self.radio_custeio_sim)
-        custeio_group.addButton(self.radio_custeio_nao)
-
-        # Define o estado inicial com base nos dados
-        atividade_custeio_value = self.dados.get('atividade_custeio', 'Não')
-        self.radio_custeio_sim.setChecked(atividade_custeio_value == 'Sim')
-        self.radio_custeio_nao.setChecked(atividade_custeio_value == 'Não')
-
-        custeio_layout.addWidget(custeio_label)
-        custeio_layout.addWidget(self.radio_custeio_sim)
-        custeio_layout.addWidget(self.radio_custeio_nao)
-        
-        # Adiciona o layout do rádio button ao layout principal
-        layout.addLayout(custeio_layout)
         classificacao_orcamentaria_group_box.setLayout(layout)
         
         return classificacao_orcamentaria_group_box
@@ -1014,6 +1038,31 @@ class EditarDadosWindow(QMainWindow):
         frame = QFrame()
         layout = QVBoxLayout()
 
+        contratacao_layout = QHBoxLayout()
+        # Layout para CNPJ
+        cnpj_layout = QHBoxLayout() 
+        label_cnpj = QLabel("CNPJ Matriz:", self)
+        label_cnpj.setStyleSheet("font-size: 16px")
+        cnpj_layout.addWidget(label_cnpj)
+        self.cnpj_edit = QLineEdit(str(self.dados.get('cnpj_matriz', '00394502000144')))
+        cnpj_layout.addWidget(self.cnpj_edit)
+        contratacao_layout.addLayout(cnpj_layout)
+
+        # Layout para Sequencial PNCP
+        sequencial_layout = QHBoxLayout()
+        label_sequencial = QLabel("Sequencial PNCP:", self)
+        label_sequencial.setStyleSheet("font-size: 16px")
+        sequencial_layout.addWidget(label_sequencial)
+        self.sequencial_edit = QLineEdit(str(self.dados.get('sequencial_pncp', '')))
+        self.sequencial_edit.setPlaceholderText("Digite o Sequencial PNCP")
+        sequencial_layout.addWidget(self.sequencial_edit)
+        contratacao_layout.addLayout(sequencial_layout)
+
+        # contratacao_layout.addWidget(btn_consultar)
+        add_button_func("Consultar", "api", self.emit_request_consulta_api, contratacao_layout, self.icons, tooltip="Salvar os Dados")
+
+        layout.addLayout(contratacao_layout)
+
         label_titulo = QLabel("Dados da Tabela")
         layout.addWidget(label_titulo)
 
@@ -1113,45 +1162,14 @@ class EditarDadosWindow(QMainWindow):
         # Adiciona objeto_label ao layout de labels abaixo de title_label
         vlayout_titulo.addWidget(self.objeto_label)
 
-        layout_om_title = QHBoxLayout()
+        hlayout_selecao_om= QHBoxLayout()
 
-        om_layout, self.om_combo = create_selecao_om_layout(
-            self.database_path,
-            dados=self.dados,
-            load_sigla_om_callback=load_sigla_om,
-            on_om_changed_callback=lambda om_combo, dados, db_path: on_om_changed(self, om_combo, dados, db_path)
-        )
-
-        layout_om_title.addLayout(om_layout)
-
-        divisao_layout = QHBoxLayout()
-        divisao_label = QLabel("  Divisão: ")
-        divisao_label.setStyleSheet("font-size: 16px; font-weight: bold")
-        divisao_layout.addWidget(divisao_label)
-
-        # Criando o QComboBox editável
-        self.setor_responsavel_combo = QComboBox()
-        self.setor_responsavel_combo .setStyleSheet("font-size: 14px")
-        # Adicionando as opções ao ComboBox
-        divisoes = [
-            "Divisão de Abastecimento",
-            "Divisão de Finanças",
-            "Divisão de Obtenção",
-            "Divisão de Pagamento",
-            "Divisão de Administração",
-            "Divisão de Subsistência"
-        ]
-        self.setor_responsavel_combo .addItems(divisoes)
-
-        # Definindo o texto atual com base nos dados fornecidos
-        self.setor_responsavel_combo .setCurrentText(self.dados.get('setor_responsavel', 'Selecione a Divisão'))
-        divisao_layout.addWidget(self.setor_responsavel_combo)
+        hlayout_selecao_om.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
 
         # Criação do om_label com fonte 14
-        sigla_om = self.dados.get("sigla_om", "N/A")
         orgao_responsavel = self.dados.get("orgao_responsavel", "N/A")
         self.uasg = self.dados.get("uasg", "N/A")
-        self.om_label = QLabel(f"{sigla_om} - {orgao_responsavel} ({ self.uasg})", self)
+        self.om_label = QLabel(f"{orgao_responsavel} ({ self.uasg})", self)
 
         font_objeto = QFont()
         font_objeto.setPointSize(12)
@@ -1159,13 +1177,16 @@ class EditarDadosWindow(QMainWindow):
         self.om_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # Adiciona objeto_label ao layout de labels abaixo de title_label
-        vlayout_titulo.addWidget(self.om_label)
+        hlayout_selecao_om.addWidget(self.om_label)
+    
+        hlayout_selecao_om.addSpacerItem(QSpacerItem(20, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum))
+
+        vlayout_titulo.addLayout(hlayout_selecao_om)
 
                 # Cria a linha divisória com espaçamento e adiciona ao layout
         linha_divisoria, spacer_baixo_linha = linha_divisoria_layout()
         vlayout_titulo.addWidget(linha_divisoria)
         vlayout_titulo.addSpacerItem(spacer_baixo_linha)
-
 
             # Espaçador abaixo da linha divisória
         spacer_baixo_linha = QSpacerItem(5, 5, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)

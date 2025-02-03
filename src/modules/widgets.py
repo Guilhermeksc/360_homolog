@@ -21,6 +21,10 @@ from modules.dispensa.view import DispensaEletronicaWidget
 from modules.dispensa.model import DispensaEletronicaModel
 from modules.dispensa.controller import DispensaEletronicaController
 
+from modules.contratos.view import ContratosView
+from modules.contratos.model import ContratosModel
+from modules.contratos.controller import ContratosController
+
 # from modules.atas.classe_atas import AtasWidget
 # from modules.pca.models import PCAModel  # Exemplo para PCA
 # from modules.atas.models import AtasModel  # Exemplo para Atas
@@ -42,8 +46,7 @@ __all__ = [
     "GerarAtasApiController",
     "IndicadoresView",
     # "AtasWidget",
-    # "ContratosView",
-    
+
     "DispensaEletronicaController",
     "DispensaEletronicaWidget",
     "DispensaEletronicaModel",
@@ -52,8 +55,10 @@ __all__ = [
     "GerarAtasModel",
     "GerarAtasController",
 
-    
-    # "ContratosModel",
+    "ContratosView",
+    "ContratosModel",
+    "ContratosController",
+
     # "PCAModel",
     # "AtasModel",
 
@@ -62,7 +67,7 @@ __all__ = [
     # "LicitacaoController",
 
 
-    # "ContratosController",
+
 
     # Utils
     "load_icons",

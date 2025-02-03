@@ -1,27 +1,18 @@
 {
-    "organização_militar": [
-        {
-            "Nome": "CeIMBra",
-            "Sigla": "CeIMBra",
-            "UASG": "787010",
-            "Indicativo": "CITBRA",
-            "Cidade": "Brasília-DF"
-        },
-        {
-            "Nome": "CEIMSPA",
-            "Sigla": "CEIMSPA",
-            "UASG": "818101",
-            "Indicativo": "CITSPA",
-            "Cidade": "São Pedro da Aldeia-RJ"
-        }
-    ],
     "organizacoes": [
         {
             "UASG": "787010",
             "Nome": "CENTRO DE INTENDÊNCIA DA MARINHA EM BRASÍLIA",
             "Sigla": "CEIMBRA",
             "Indicativo": "CITBRA",
-            "Cidade": "Brasília-DF,"
+            "Cidade": "Brasília-DF"
+        },
+        {
+            "UASG": "779799",
+            "Nome": "CENTRO DE INTENDÊNCIA DE MANAUS",
+            "Sigla": "CEIMMA",
+            "Indicativo": "CITMAN",
+            "Cidade": "Manaus-AM"
         }
     ]
 }

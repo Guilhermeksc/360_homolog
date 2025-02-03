@@ -2,21 +2,20 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 import pandas as pd
-from pathlib import Path
 import re
 from num2words import num2words
-import subprocess
 import os
 from datetime import datetime
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import QSize
 from fpdf import FPDF
-import json
 from docxtpl import DocxTemplate
 from PyPDF2 import PdfMerger
-from paths import *
+from paths import load_config_path_id, save_config, TEMPLATE_DISPENSA_DIR
 from modules.dispensa.dialogs.edit_data.widgets.gerenciador_anexos.pdf_add_dialog import ProgressDialog
-from paths import load_config_path_id
+import sys
+import subprocess
+from pathlib import Path
 
 class ConsolidarDocumentos(QObject):
     status_atualizado = pyqtSignal(str, str)
@@ -304,7 +303,7 @@ class ConsolidarDocumentos(QObject):
         if new_dir:
             self.pasta_base = Path(new_dir)
             self.config['pasta_base'] = str(self.pasta_base)
-            save_config(self.config)
+            save_config("pasta_base", str(self.pasta_base))
             QMessageBox.information(None, "Diretório Base Alterado", f"O novo diretório base foi alterado para: {self.pasta_base}")
 
     def abrir_pasta_base(self):
@@ -317,7 +316,7 @@ class ConsolidarDocumentos(QObject):
     def abrirDocumento(self, docx_path):
         try:
             pdf_path = self.convert_to_pdf(docx_path)
-            os.startfile(pdf_path)
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(pdf_path)))
             print(f"Documento PDF aberto: {pdf_path}")
         except Exception as e:
             print(f"Erro ao abrir ou converter o documento: {e}")
@@ -336,20 +335,54 @@ class ConsolidarDocumentos(QObject):
     def convert_to_pdf(self, docx_path):
         docx_path = Path(docx_path) if not isinstance(docx_path, Path) else docx_path
         pdf_path = docx_path.with_suffix('.pdf')
-        word = win32com.client.Dispatch("Word.Application")
-        doc = None
-        try:
-            doc = word.Documents.Open(str(docx_path))
-            doc.SaveAs(str(pdf_path), FileFormat=17)
-        except Exception as e:
-            raise e
-        finally:
-            if doc is not None:
-                doc.Close()
-            word.Quit()
+        
+        if sys.platform.startswith("win"):
+            import win32com.client
+            word = win32com.client.Dispatch("Word.Application")
+            doc = None
+            try:
+                doc = word.Documents.Open(str(docx_path))
+                doc.SaveAs(str(pdf_path), FileFormat=17)
+            except Exception as e:
+                raise e
+            finally:
+                if doc is not None:
+                    doc.Close()
+                word.Quit()
+        else:
+            try:
+                comando = [
+                    "libreoffice",
+                    "--headless",
+                    "--convert-to", "pdf",
+                    "--outdir", str(docx_path.parent),
+                    str(docx_path)
+                ]
+                subprocess.run(comando, check=True)
+            except Exception as e:
+                raise e
+
         if not pdf_path.exists():
             raise FileNotFoundError(f"O arquivo PDF não foi criado: {pdf_path}")
         return pdf_path
+
+    # def convert_to_pdf(self, docx_path):
+    #     docx_path = Path(docx_path) if not isinstance(docx_path, Path) else docx_path
+    #     pdf_path = docx_path.with_suffix('.pdf')
+    #     word = win32com.client.Dispatch("Word.Application")
+    #     doc = None
+    #     try:
+    #         doc = word.Documents.Open(str(docx_path))
+    #         doc.SaveAs(str(pdf_path), FileFormat=17)
+    #     except Exception as e:
+    #         raise e
+    #     finally:
+    #         if doc is not None:
+    #             doc.Close()
+    #         word.Quit()
+    #     if not pdf_path.exists():
+    #         raise FileNotFoundError(f"O arquivo PDF não foi criado: {pdf_path}")
+    #     return pdf_path
 
     def valor_por_extenso(self, valor): 
         if not valor or valor.strip() == '':  # Verifica se o valor está vazio ou None

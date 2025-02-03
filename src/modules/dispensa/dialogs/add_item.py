@@ -3,7 +3,9 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from pathlib import Path
 from datetime import datetime
+from modules.utils.select_om import load_sigla_om
 import sqlite3
+from paths import ORGANIZACOES_FILE
 
 class AddItemDialog(QDialog):
     def __init__(self, icons, database_path, controle_om, parent=None):
@@ -15,13 +17,15 @@ class AddItemDialog(QDialog):
         self.setWindowTitle("Adicionar Item")
         self.setWindowIcon(self.icons["plus"])
 
-        # self.setFixedSize(550, 250)
-        # self.database_manager = DatabaseManager(self.database_path)
-        self.layout = QVBoxLayout(self)
+        self.layout = QVBoxLayout(self)  # Inicializa o layout antes de adicionar widgets
+
         self.setStyleSheet("QWidget { font-size: 14px; }")
 
         self.setup_ui()
-        self.load_sigla_om()  # Preenche self.om_details com dados do banco
+
+        # Carregar as siglas das OMs para o combo
+        load_sigla_om(ORGANIZACOES_FILE, self.sigla_om_cb, "")  # Passe o caminho do JSON corretamente
+
         self.load_next_numero()
 
     def setup_ui(self):
@@ -182,33 +186,3 @@ class AddItemDialog(QDialog):
             data['id_processo'] = f"Desconhecido {data['numero']}/{data['ano']}"
 
         return data
-    
-    def load_sigla_om(self):
-        try:
-            with sqlite3.connect(self.controle_om) as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT DISTINCT sigla_om, orgao_responsavel, uasg FROM controle_om ORDER BY sigla_om")
-                self.om_details = {"CeIMBra": {"orgao_responsavel": "Centro de Intendência da Marinha em Brasília", "uasg": "787010"}}
-                self.sigla_om_cb.clear()
-                ceimbra_found = False
-                default_index = 0
-
-                for index, row in enumerate(cursor.fetchall()):
-                    sigla, orgao, uasg = row
-                    self.sigla_om_cb.addItem(sigla)
-                    self.om_details[sigla] = {"orgao_responsavel": orgao, "uasg": uasg}
-                    if sigla == "CeIMBra":
-                        ceimbra_found = True
-                        default_index = index
-
-                if ceimbra_found:
-                    self.sigla_om_cb.setCurrentIndex(default_index)
-                else:
-                    self.sigla_om_cb.setCurrentText("CeIMBra")
-
-        except Exception as e:
-            print(f"Erro ao carregar siglas de OM: {e}")
-            # Garantindo a existência de "CeIMBra" em caso de erro de carregamento
-            self.om_details = {"CeIMBra": {"orgao_responsavel": "Centro de Intendência da Marinha em Brasília", "uasg": "787010"}}
-            self.sigla_om_cb.addItem("CeIMBra")
-            self.sigla_om_cb.setCurrentText("CeIMBra")

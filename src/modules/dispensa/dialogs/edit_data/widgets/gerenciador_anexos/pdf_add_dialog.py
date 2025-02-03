@@ -7,9 +7,12 @@ import fitz
 import re
 from num2words import num2words
 import os
+import sys
+import subprocess
 from datetime import datetime
 from docxtpl import DocxTemplate
 from PyPDF2 import PdfMerger
+from paths import load_config_path_id, TEMPLATE_DISPENSA_DIR
 
 class PDFAddDialog(QDialog):
 
@@ -357,7 +360,8 @@ class Worker(QThread):
             merger.write(str(output_pdf_path))
             merger.close()
 
-            os.startfile(output_pdf_path)
+            # Abre o PDF utilizando QDesktopServices (multiplataforma)
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(output_pdf_path)))
             print(f"PDF concatenado salvo e aberto: {output_pdf_path}")
         except Exception as e:
             print(f"Erro ao concatenar os PDFs: {e}")
@@ -551,28 +555,41 @@ class Worker(QThread):
         Converte um arquivo .docx em PDF.
         """
         try:
-            # Converte o caminho do arquivo para Path, caso não seja.
+            # Converte o caminho para Path, se necessário.
             docx_path = Path(docx_path) if not isinstance(docx_path, Path) else docx_path
             pdf_path = docx_path.with_suffix('.pdf')
 
-            # Abre o Word e converte o arquivo .docx em .pdf
-            word = win32com.client.Dispatch("Word.Application")
-            doc = None
-            try:
-                doc = word.Documents.Open(str(docx_path))
-                doc.SaveAs(str(pdf_path), FileFormat=17)  # 17 é o código para salvar como PDF
-            except Exception as e:
-                raise e
-            finally:
-                if doc is not None:
-                    doc.Close()
-                word.Quit()
+            if sys.platform.startswith("win"):
+                import win32com.client
+                word = win32com.client.Dispatch("Word.Application")
+                doc = None
+                try:
+                    doc = word.Documents.Open(str(docx_path))
+                    doc.SaveAs(str(pdf_path), FileFormat=17)  # 17 é o código para PDF
+                except Exception as e:
+                    raise e
+                finally:
+                    if doc is not None:
+                        doc.Close()
+                    word.Quit()
+            else:
+                try:
+                    comando = [
+                        "libreoffice",
+                        "--headless",
+                        "--convert-to", "pdf",
+                        "--outdir", str(docx_path.parent),
+                        str(docx_path)
+                    ]
+                    subprocess.run(comando, check=True)
+                except Exception as e:
+                    raise e
 
-            # Verifica se o PDF foi criado corretamente
             if not pdf_path.exists():
                 raise FileNotFoundError(f"O arquivo PDF não foi criado: {pdf_path}")
 
-            return pdf_path  # Retorna o caminho do arquivo PDF gerado
+            return pdf_path
+
         except Exception as e:
             print(f"Erro ao converter o documento: {e}")
             QMessageBox.warning(None, "Erro", f"Erro ao converter o documento: {e}")

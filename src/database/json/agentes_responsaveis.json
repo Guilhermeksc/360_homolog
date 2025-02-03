@@ -20,5 +20,37 @@
             "Abreviacao": "CF (IM)",
             "Funcao": "Agente Fiscal"
         }
+    ],
+    "gerente_de_crédito": [
+        {
+            "Nome": "JOÃO",
+            "Posto": "Primeiro-Tenente",
+            "Abreviacao": "1ºTEN",
+            "Funcao": "Gerente de Crédito"
+        }
+    ],
+    "responsável_pela_demanda": [
+        {
+            "Nome": "CARLOS",
+            "Posto": "Primeiro-Tenente",
+            "Abreviacao": "1ºTEN",
+            "Funcao": "Responsável pela Demanda"
+        }
+    ],
+    "operador_da_contratação": [
+        {
+            "Nome": "MATHES",
+            "Posto": "Primeiro-Tenente",
+            "Abreviacao": "1ºTEN",
+            "Funcao": "Operador da Contratação"
+        }
+    ],
+    "pregoeiro": [
+        {
+            "Nome": "ROBERTA",
+            "Posto": "Primeiro-Tenente",
+            "Abreviacao": "1ºTEN",
+            "Funcao": "Pregoeiro"
+        }
     ]
 }

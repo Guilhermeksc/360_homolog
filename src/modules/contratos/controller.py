@@ -1,45 +1,24 @@
-from modules.dispensa.model import DispensaEletronicaModel
-from modules.dispensa.view import DispensaEletronicaWidget
-from modules.dispensa.dialogs.add_item import AddItemDialog
-from modules.dispensa.dialogs.salvar_tabela import DataManager
-from modules.dispensa.dialogs.gerar_tabela import TabelaResumidaManager
-from modules.dispensa.dialogs.edit_data.edit_data import EditarDadosWindow
-from modules.dispensa.database_manager.db_manager import DatabaseManager
 from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 import pandas as pd
 from paths import CONTROLE_DADOS
 import sqlite3
-import os
-from modules.dispensa.dados_api.api_consulta import ConsultaAPIDialog
 
-class DispensaEletronicaController(QObject): 
+class ContratosController(QObject): 
     def __init__(self, icons, view, model):
         super().__init__()
         self.icons = icons
         self.view = view
         self.edit_data_dialog = None
         self.model_add = model
-        self.model = model.setup_model("controle_dispensas")
+        self.model = model.setup_model("controle_contratos")
         self.controle_om = CONTROLE_DADOS  # Atribui o caminho diretamente ao controle_om                
-        self.setup_connections()
+        # self.setup_connections()
 
     def setup_connections(self):
         # Conecta os sinais da view aos métodos do controlador
-        self.view.addItem.connect(self.handle_add_item)
         self.view.deleteItem.connect(self.handle_delete_item)
-        self.view.dataManager.connect(self.handle_data_manager)
         self.view.salvar_print.connect(self.handle_save_print)
-        self.view.rowDoubleClicked.connect(self.handle_edit_item)
-        self.view.request_consulta_api.connect(self.consultar_api)
-
-    def consultar_api(self, cnpj, ano, sequencial, uasg, numero):
-        # Inicia o diálogo de consulta API com o parent `self.view`
-        dialog = ConsultaAPIDialog(numero, cnpj, sequencial, ano, uasg, parent=self.view)
-        
-        # Conecta o sinal `consulta_concluida` para processar os dados após a consulta
-        dialog.consulta_concluida.connect(self.handle_api_data)
-        dialog.exec()
 
     def handle_api_data(self, data_informacoes_lista, resultados_completos):
         # Estrutura os dados da API para salvar no banco de dados
@@ -50,16 +29,6 @@ class DispensaEletronicaController(QObject):
         
         # Solicita ao modelo que salve os dados no banco de dados
         self.model_add.save_api_data(data_api_to_save)
-        
-    def handle_add_item(self):
-        """Trata a ação de adicionar item."""
-        dialog = AddItemDialog(self.icons, self.model.database_manager.db_path, self.controle_om, self.view)  # Passa o caminho do banco de dados
-        if dialog.exec():
-            item_data = dialog.get_data()
-            # Adiciona a situação padrão 'Planejamento' antes de salvar
-            item_data['situacao'] = 'Planejamento'
-            self.model_add.insert_or_update_data(item_data)  # Salva no banco de dados
-            self.view.refresh_model()   # Salva no banco de dados
 
     def handle_delete_item(self):
         """Trata a ação de exclusão de um item selecionado."""
@@ -107,70 +76,6 @@ class DispensaEletronicaController(QObject):
     def refresh_view(self):
         # Atualiza a visualização da tabela após alterações nos dados
         self.view.model.select()  # Recarrega os dados no modelo
-
-    def handle_edit_item(self, data):
-        # Extrai informações para compor o nome da tabela
-        cnpj_matriz = data.get("cnpj_matriz")
-        sequencial_pncp = data.get("sequencial_pncp")
-        ano = str(data.get("ano", "0000"))[-4:]  # Captura apenas os 4 últimos dígitos do ano
-        
-        # Monta o nome da tabela com base nos dados
-        table_name = f"{cnpj_matriz}_1_{sequencial_pncp}_{ano}"
-        # print(f"DEBUG: Nome da tabela a ser verificada: {table_name}")
-
-        # Conecta ao banco de dados para verificar se a tabela existe e realizar as consultas
-        try:
-            with self.model_add.database_manager as conn:
-                cursor = conn.cursor()
-                
-                # Verifica se a tabela existe
-                cursor.execute(f'SELECT name FROM sqlite_master WHERE type="table" AND name="{table_name}"')
-                table_exists = cursor.fetchone() is not None
-                
-                if table_exists:
-                    # print(f"Sucesso: A tabela '{table_name}' existe no banco de dados.")
-                    
-                    # Calcula `total_homologado`
-                    cursor.execute(f'SELECT SUM(valorTotalHomologado) FROM "{table_name}" WHERE valorTotalHomologado IS NOT NULL')
-                    total_homologado = cursor.fetchone()[0]
-                    total_homologado = total_homologado if total_homologado is not None else None
-                    print(f"Somatório de valorTotalHomologado: {total_homologado}")
-
-                    # Conta `situacaoCompraItemNome` com valores específicos
-                    cursor.execute(f'''
-                        SELECT COUNT(*) 
-                        FROM "{table_name}" 
-                        WHERE situacaoCompraItemNome IN ("Anulado/Revogado/Cancelado", "Fracassado")
-                    ''')
-                    count_anulado_fracassado = cursor.fetchone()[0]
-                    count_anulado_fracassado = count_anulado_fracassado if count_anulado_fracassado > 0 else None
-                    print(f"Quantidade de itens 'Anulado/Revogado/Cancelado' ou 'Fracassado': {count_anulado_fracassado}")
-
-                    # Conta `situacaoCompraItemResultadoNome` com valor "Informado"
-                    cursor.execute(f'''
-                        SELECT COUNT(*) 
-                        FROM "{table_name}" 
-                        WHERE situacaoCompraItemResultadoNome = "Informado"
-                    ''')
-                    count_informado = cursor.fetchone()[0]
-                    count_informado = count_informado if count_informado > 0 else None
-                    print(f"Quantidade de itens com situacaoCompraItemResultadoNome 'Informado': {count_informado}")
-                    
-                else:
-                    print(f"Erro: A tabela '{table_name}' não foi encontrada no banco de dados.")
-                    total_homologado, count_anulado_fracassado, count_informado = "Não Informado", "Não Informado", "Não Informado"
-                    
-        except sqlite3.Error as e:
-            print(f"Erro ao consultar a tabela no banco de dados: {e}")
-            total_homologado, count_anulado_fracassado, count_informado = "Não Informado", "Não Informado", "Não Informado"
-
-        # Passa os valores para a instância de EditarDadosWindow
-        self.edit_data_dialog = EditarDadosWindow(
-            data, self.icons, table_name, self.view
-        )
-        self.edit_data_dialog.save_data_signal.connect(self.handle_save_data)
-        self.view.connect_editar_dados_window(self.edit_data_dialog)  # Conecta sinais
-        self.edit_data_dialog.show()
     
     def handle_save_data(self, data):
         try:
@@ -223,30 +128,6 @@ class DispensaEletronicaController(QObject):
         df['sigla_om'] = df['uasg'].map(lambda x: om_details.get(x, {}).get('sigla_om', ''))
         df['orgao_responsavel'] = df['uasg'].map(lambda x: om_details.get(x, {}).get('orgao_responsavel', ''))
 
-    def salvar_tabela_completa(self):
-        try:
-            self.model.select()
-            tabela_manager = TabelaResumidaManager(self.model)
-            tabela_manager.carregar_dados()
-            output_path = os.path.join(os.getcwd(), "tabela_completa.xlsx")
-            tabela_manager.exportar_df_completo_para_excel(output_path)
-            tabela_manager.abrir_arquivo_excel(output_path)
-        except PermissionError:
-            QMessageBox.warning(self.view, "Erro de Permissão", 
-                                "Feche o arquivo 'tabela_completa.xlsx' se ele estiver aberto e tente novamente.")
-
-    def salvar_tabela_resumida(self):
-        try:
-            self.model.select()
-            tabela_manager = TabelaResumidaManager(self.model)
-            tabela_manager.carregar_dados()
-            output_path = os.path.join(os.getcwd(), "tabela_resumida.xlsx")
-            tabela_manager.exportar_para_excel(output_path)
-            tabela_manager.abrir_arquivo_excel(output_path)
-        except PermissionError:
-            QMessageBox.warning(self.view, "Erro de Permissão", 
-                                "Feche o arquivo 'tabela_resumida.xlsx' se ele estiver aberto e tente novamente.")
-
     def excluir_database(self):
         reply = QMessageBox.question(self.view, "Confirmação de Exclusão",
                                      "Tem certeza de que deseja excluir todos os dados?",
@@ -261,12 +142,7 @@ class DispensaEletronicaController(QObject):
             self.view.refresh_model()
             # self.model.select()  # Atualiza o modelo para refletir a exclusão
 
-    def handle_data_manager(self):
-        """Trata a ação de salvar a tabela e gerenciar as ações de dados."""
-        dialog = DataManager(self.icons, self.model, self, parent=self.view)
-        dialog.exec()
-        # self.model.select()
-        
+
 def show_warning_if_view_exists(view, title, message):
     if view is not None:
         QMessageBox.warning(view, title, message)
