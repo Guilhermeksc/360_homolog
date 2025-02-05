@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtCore import *
 import pandas as pd
 from paths import CONTROLE_DADOS
+from modules.contratos.api.comprasnet_api import ConsultaAPIWindow
 import sqlite3
 
 class ContratosController(QObject): 
@@ -13,12 +14,11 @@ class ContratosController(QObject):
         self.model_add = model
         self.model = model.setup_model("controle_contratos")
         self.controle_om = CONTROLE_DADOS  # Atribui o caminho diretamente ao controle_om                
-        # self.setup_connections()
+        self.setup_connections()
 
     def setup_connections(self):
         # Conecta os sinais da view aos métodos do controlador
-        self.view.deleteItem.connect(self.handle_delete_item)
-        self.view.salvar_print.connect(self.handle_save_print)
+        self.view.apiCheck.connect(self.abrir_consulta_api)
 
     def handle_api_data(self, data_informacoes_lista, resultados_completos):
         # Estrutura os dados da API para salvar no banco de dados
@@ -141,6 +141,11 @@ class ContratosController(QObject):
             QMessageBox.information(self.view, "Sucesso", "Tabela excluída com sucesso.")
             self.view.refresh_model()
             # self.model.select()  # Atualiza o modelo para refletir a exclusão
+
+    def abrir_consulta_api(self):
+        dialog = ConsultaAPIWindow(self.icons, self.model_add, self.view)  # Agora passando model e view
+        dialog.exec()
+
 
 
 def show_warning_if_view_exists(view, title, message):

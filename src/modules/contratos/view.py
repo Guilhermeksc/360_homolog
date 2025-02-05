@@ -3,6 +3,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 from modules.utils.search_bar import setup_search_bar, MultiColumnFilterProxyModel
 from modules.utils.add_button import add_button
+
 import pandas as pd
 
 class ContratosView(QMainWindow):
@@ -125,9 +126,13 @@ class ContratosView(QMainWindow):
         for column in range(self.model.columnCount()):
             self.table_view.setItemDelegateForColumn(column, center_delegate)
 
-        # Aplica CustomItemDelegate à coluna "situação" para exibir ícones
-        situacao_index = self.model.fieldIndex('situacao')
-        self.table_view.setItemDelegateForColumn(situacao_index, CustomItemDelegate(self.icons, self.table_view, self.model))
+        # # Configuração do delegate para a coluna 'dias'
+        # dias_index = self.model.fieldIndex('dias')
+        # self.table_view.setItemDelegateForColumn(dias_index, DiasDelegate(self.icons, self.table_view))
+
+        # Configuração do delegate para a coluna 'situação' (ícones)
+        status_icons = self.model.fieldIndex('status')
+        self.table_view.setItemDelegateForColumn(status_icons, CustomStatusItemDelegate(self.icons, self.table_view, self.model))
 
         self.main_layout.addWidget(self.table_view)
 
@@ -139,14 +144,14 @@ class ContratosView(QMainWindow):
     def update_column_headers(self):
         titles = {
             0: "Status", 1: "Dias", 2: "Renova?",
-            14: "Sigla OM", 4: "Contrato/Ata", 5: "Tipo",
-            6: "Processo", 7: "Empresa", 8: "Objeto", 9: "Valor"
+            4: "Contrato", 5: "Tipo", 7: "Empresa", 
+            8: "Objeto", 9: "Valor", 14: "OM", 
             }
         for column, title in titles.items():
             self.model.setHeaderData(column, Qt.Orientation.Horizontal, title)
 
     def hide_unwanted_columns(self):
-        visible_columns = {0, 1, 2, 14, 4, 5, 6, 7, 8, 9}
+        visible_columns = {0, 1, 2, 4, 5, 7, 8, 9, 14}
         for column in range(self.model.columnCount()):
             if column not in visible_columns:
                 self.table_view.hideColumn(column)
@@ -162,11 +167,13 @@ class ContratosView(QMainWindow):
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(7, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(8, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(17, QHeaderView.ResizeMode.Fixed)
 
         header.resizeSection(0, 150)        
         header.resizeSection(1, 30)
         header.resizeSection(5, 70)
+        header.resizeSection(8, 200)
         header.resizeSection(17, 100)
 
 class CenterAlignDelegate(QStyledItemDelegate):
@@ -174,28 +181,29 @@ class CenterAlignDelegate(QStyledItemDelegate):
         super().initStyleOption(option, index)
         option.displayAlignment = Qt.AlignmentFlag.AlignCenter
 
-class CustomItemDelegate(QStyledItemDelegate):
+class CustomStatusItemDelegate(QStyledItemDelegate):
     def __init__(self, icons, parent=None, model=None):
         super().__init__(parent)
         self.icons = icons
         self.model = model
 
     def paint(self, painter, option, index):
-        # Verifica se estamos na coluna de situação
-        if index.column() == self.model.fieldIndex('situacao'):
-            situacao = index.data(Qt.ItemDataRole.DisplayRole)
+        # Verifica se estamos na coluna de status
+        if index.column() == self.model.fieldIndex('status'):
+            status = index.data(Qt.ItemDataRole.DisplayRole)
+            
             # Define o mapeamento de ícones
             icon_key = {
-                'Planejamento': 'business',
-                'Aprovado': 'verify_menu',
-                'Sessão Pública': 'session',
-                'Homologado': 'deal',
-                'Empenhado': 'emenda_parlamentar',
-                'Concluído': 'aproved',
-                'Arquivado': 'archive'
-            }.get(situacao)
+                'Planejamento': 'assinatura',
+                'Reajuste': 'economy',
+                'Prioritário': 'prioridade',
+                'MSG Enviada': 'delivered',
+                'Tá Safo!': 'like',
+                'Vai garrar!': 'head_skull',
+                'Nota Técnica': 'deal',
+            }.get(status)
 
-            # Desenha o ícone se encontrado no mapeamento
+            # Desenha o ícone, se disponível
             if icon_key and icon_key in self.icons:
                 icon = self.icons[icon_key]
                 icon_size = 24
@@ -204,10 +212,17 @@ class CustomItemDelegate(QStyledItemDelegate):
                                   icon_size, icon_size)
                 painter.drawPixmap(icon_rect, icon.pixmap(icon_size, icon_size))
 
-                # Desenha o texto ao lado do ícone
+                # Ajusta o retângulo de texto para não sobrepor o ícone
                 text_rect = QRect(icon_rect.right() + 5, option.rect.top(),
                                   option.rect.width() - icon_size - 10, option.rect.height())
-                painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, situacao)
+            else:
+                # Usa o espaço completo se não houver ícone
+                text_rect = option.rect
+
+            # Configura o pincel para o texto
+            # painter.setPen(text_color)
+            painter.drawText(text_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, status)
+
         else:
             # Desenha normalmente nas outras colunas
             super().paint(painter, option, index)

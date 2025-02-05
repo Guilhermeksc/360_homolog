@@ -8,11 +8,13 @@ if getattr(sys, 'frozen', False):  # Executável compilado
 else:  # Ambiente de desenvolvimento
     BASE_DIR = Path(__file__).resolve().parent.parent
     
-CONFIG_FILE = BASE_DIR / "config.json"    
+  
 DATABASE_DIR = BASE_DIR / "database"    
 MODULES_DIR = BASE_DIR / "modules"
 
 JSON_DIR = DATABASE_DIR / "json"
+JSON_COMPRASNET_CONTRATOS = JSON_DIR / "consulta_comprasnet"
+CONFIG_FILE = JSON_DIR / "config.json"  
 SQL_DIR = DATABASE_DIR / "sql"
 CONTROLE_DADOS = SQL_DIR / "controle_dados.db"
 

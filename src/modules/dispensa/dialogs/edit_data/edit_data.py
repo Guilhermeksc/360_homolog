@@ -272,7 +272,6 @@ class EditarDadosWindow(QMainWindow):
             }
         """)
 
-
         # Criando o main_widget dentro do frame
         main_widget = QWidget(self.frame_container)
         self.setCentralWidget(self.frame_container)  # Definindo o frame como o central widget
@@ -296,7 +295,6 @@ class EditarDadosWindow(QMainWindow):
 
         # Configuração dos widgets no QStackedWidget
         self.setup_stacked_widgets()
-
 
     def create_navigation_layout(self):
         # Criação do frame que conterá o nav_layout e aplicará a borda inferior

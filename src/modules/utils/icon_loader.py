@@ -39,6 +39,7 @@ def load_icons():
         "contrato_blue": load_icon("contrato_blue.png"),
         "priority": load_icon("priority.png"),
         "head_skull": load_icon("head_skull.png"),
+        "danger": load_icon("danger.png"),
         "like": load_icon("like.png"),
         "assinatura": load_icon("assinatura.png"),
         "delivered": load_icon("delivered.png"),
