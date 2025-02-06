@@ -171,7 +171,7 @@ class ContratosView(QMainWindow):
         header.setSectionResizeMode(17, QHeaderView.ResizeMode.Fixed)
 
         header.resizeSection(0, 150)        
-        header.resizeSection(1, 30)
+        header.resizeSection(1, 50)
         header.resizeSection(5, 70)
         header.resizeSection(8, 200)
         header.resizeSection(17, 100)

@@ -6,7 +6,7 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_all
 
 # Defina o caminho do diretório base diretamente
-BASE_DIR = Path("C:/Users/guilh/360JAN2025/src")
+BASE_DIR = Path("C:/Users/guilh/OneDrive/Documentos/novo360/360JAN2025/src")
 DATABASE_DIR = BASE_DIR / "database"
 ASSETS_DIR = BASE_DIR / "assets"
 ICON_PATH = ASSETS_DIR / "icone_brasil.ico"
@@ -29,7 +29,6 @@ a = Analysis(
     win_private_assemblies=False,
     cipher=block_cipher,
 )
-
 # Inclua os diretórios database e resources inteiros
 a.datas += Tree(str(DATABASE_DIR), prefix='src/database/')
 a.datas += Tree(str(ASSETS_DIR), prefix='src/assets/')

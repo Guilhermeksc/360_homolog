@@ -166,7 +166,7 @@ class CustomSqlTableModel(QSqlTableModel):
             if role == Qt.ItemDataRole.DisplayRole:
                 status_value = super().data(index, Qt.ItemDataRole.DisplayRole)  # Obtém valor do banco de dados
                 if not status_value:  # Se estiver vazio ou None, substitui por "Planejamento"
-                    print(f"[DEBUG] Status vazio encontrado na linha {index.row()}. Definindo 'Planejamento'.")
+                    # print(f"[DEBUG] Status vazio encontrado na linha {index.row()}. Definindo 'Planejamento'.")
                     return "Planejamento"
                 return status_value  # Caso contrário, retorna o valor correto
             

@@ -8,11 +8,11 @@
             "Cidade": "Brasília-DF"
         },
         {
-            "UASG": "779799",
-            "Nome": "CENTRO DE INTENDÊNCIA DE MANAUS",
-            "Sigla": "CEIMMA",
-            "Indicativo": "CITMAN",
-            "Cidade": "Manaus-AM"
+            "UASG": "771300",
+            "Nome": "CENTRO DE OBTENÇÃO DA MARINHA NO RIO DE JANEIRO",
+            "Sigla": "COMRJ",
+            "Indicativo": "CITBRA",
+            "Cidade": "Rio de Janeiro-RJ"
         }
     ]
 }

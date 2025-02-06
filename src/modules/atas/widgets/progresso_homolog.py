@@ -739,14 +739,41 @@ padrao_grupo2 = (
     r"Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado|Revogado e Homologado)"
 )
 
-padrao_item2 = (
+# padrao_item2 = (
+#     r"Item\s+(?P<item>\d+)\s+-\s+.*?"
+#     r"Quantidade:\s+(?P<quantidade>\d+)\s+"
+#     r"Valor\s+estimado:\s+R\$\s+(?P<valor>[\d,.]+)(?:\s+\(unitário\))?\s+"
+#     r"Unidade\s+de\s+fornecimento:\s+(?P<unidade>.*?)(?:\s+R\$|$)"
+#     r".*?Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado|Revogado e Homologado)"
+# )
+
+# padrao_item2 = (
+#     r"Item\s+(?P<item>\d+)\s+-\s+.*?"
+#     r"Quantidade:\s+(?P<quantidade>\d+)\s+"
+#     r"Valor\s+estimado:\s+R\$\s+(?P<valor>[\d,.]+)\s+"
+#     r"Unidade\s+de\s+fornecimento:\s+(?P<unidade>.*?)\s+"
+#     r"Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado)"
+# )
+
+padrao_item_quantidade = (
     r"Item\s+(?P<item>\d+)\s+-\s+.*?"
     r"Quantidade:\s+(?P<quantidade>\d+)\s+"
-    r"Valor\s+estimado:\s+R\$\s+(?P<valor>[\d,.]+)(?:\s+\(unitário\))?\s+"
-    r"Unidade\s+de\s+fornecimento:\s+(?P<unidade>.*?)(?:\s+R\$|$)"
-    r".*?Situação:\s+(?P<situacao>Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado|Revogado e Homologado)"
 )
 
+# Regex para capturar "Valor estimado" e "Unidade de fornecimento"
+padrao_valor_estimado_unidade_fornecimento = (
+    r"Valor\s+estimado:\s+R\$\s+(?P<valor>[\d,.]+)(?:\s+\(unitário\))?\s+"
+    r"Unidade\s+de\s+fornecimento:\s+(?P<unidade>.*?)(?:\s+R\$|$|\s+)"
+)
+
+# Regex para capturar "Situação"
+padrao_situacao = (
+    r"Situação:\s+(?P<situacao>"
+    r"Adjudicado e Homologado|Deserto e Homologado|Fracassado e Homologado|Anulado e Homologado|Revogado e Homologado)"
+)
+
+# Combina os padrões para formar o regex final
+padrao_item2 = padrao_item_quantidade + padrao_valor_estimado_unidade_fornecimento + padrao_situacao
 
 padrao_4 = (
     r"Proposta\s+adjudicada.*?"
@@ -754,16 +781,48 @@ padrao_4 = (
     r"Modelo/versão\s*:\s*(?P<modelo_versao>.*?)(?=\s*\d{2}/\d{2}/\d{4}|\s*Valor\s+proposta\s*:)"
 )
 
-padrao_3 = (
-    r"(Adjucado|Adjudicado)\s+e\s+Homologado\s+por\s+CPF\s+(?P<cpf_od>\*\*\*.\d{3}.\*\*\*-\*\d{1})\s+-\s+"
+# padrao_3 = (
+#     r"(Adjucado|Adjudicado)\s+e\s+Homologado\s+por\s+CPF\s+(?P<cpf_od>\*\*\*.\d{3}.\*\*\*-\*\d{1})\s+-\s+"
+#     r"(?P<ordenador_despesa>[^\d,]+?)\s+para\s+"
+#     r"(?P<empresa>.*?)(?=\s*,\s*CNPJ\s+)"
+#     r"\s*,\s*CNPJ\s+(?P<cnpj>\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}),\s+"
+#     r"melhor\s+lance\s*:\s*R\$\s*(?P<melhor_lance>[\d,.]+)\s*\(unitário\)\s*"
+#     r"/\s*R\$\s*(?P<total_lance>[\d,.]+)\s*\(total\)"
+#     r"(?:,\s+valor\s+negociado\s*:\s*R\$\s*(?P<valor_negociado>[\d,.]+))?\s+"
+#     r"Propostas\s+do\s+Item"
+# )
+
+# padrao_3 = (
+#     r"(Adjucado|Adjudicado)\s+e\s+Homologado\s+por\s+CPF\s+(?P<cpf_od>\*\*\*.\d{3}.\*\*\*-\*\d{1})\s+-\s+"
+#     r"(?P<ordenador_despesa>[^\d,]+?)\s+para\s+"
+#     r"(?P<empresa>.*?)(?=\s*,\s*CNPJ\s+)"  # Captura o nome da empresa até a próxima vírgula e "CNPJ"
+#     r"\s*,\s*CNPJ\s+(?P<cnpj>\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}),\s+"
+#     r"melhor\s+lance\s*:\s*R\$\s*(?P<melhor_lance>[\d,.]+)"
+#     r"(?:,\s+valor\s+negociado\s*:\s*R\$\s*(?P<valor_negociado>[\d,.]+))?\s+"  # Captura opcional de "valor negociado"
+#     r"Propostas\s+do\s+Item"  # Finaliza a captura em "Propostas do Item"
+# )
+
+padrao_melhor_lance = (
+    r"melhor\s+lance\s*:\s*R\$\s*(?P<melhor_lance>[\d,.]+)"
+    r"(?:\s*\(unitário\)\s*/\s*R\$\s*(?P<total_lance>[\d,.]+)\s*\(total\))?"
+    r"(?:,\s+valor\s+negociado\s*:\s*R\$\s*(?P<valor_negociado>[\d,.]+))?\s+"
+)
+
+# Outros padrões mantidos conforme solicitado
+padrao_cpf_od = (
+    r"(Adjucado|Adjudicado)\s+e\s+Homologado\s+por\s+CPF\s+"
+    r"(?P<cpf_od>\*\*\*.\d{3}.\*\*\*-\*\d{1})\s+-\s+"
     r"(?P<ordenador_despesa>[^\d,]+?)\s+para\s+"
+)
+
+padrao_empresa = (
     r"(?P<empresa>.*?)(?=\s*,\s*CNPJ\s+)"
     r"\s*,\s*CNPJ\s+(?P<cnpj>\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}),\s+"
-    r"melhor\s+lance\s*:\s*R\$\s*(?P<melhor_lance>[\d,.]+)\s*\(unitário\)\s*"
-    r"/\s*R\$\s*(?P<total_lance>[\d,.]+)\s*\(total\)"
-    r"(?:,\s+valor\s+negociado\s*:\s*R\$\s*(?P<valor_negociado>[\d,.]+))?\s+"
-    r"Propostas\s+do\s+Item"
 )
+
+# Combinação dos padrões para formar o padrao_3 final
+padrao_3 = padrao_cpf_od + padrao_empresa + padrao_melhor_lance + r"Propostas\s+do\s+Item"
+
 
 def processar_item(match, conteudo: str, ultima_posicao_processada: int, padrao_3: str, padrao_4: str) -> dict:
     item = match.groupdict()
