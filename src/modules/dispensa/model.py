@@ -463,6 +463,7 @@ class CustomSqlTableModel(QSqlTableModel):
             "comunicacao_padronizada"
         ]
 
+        
     def flags(self, index):
         if index.column() in self.non_editable_columns:
             return super().flags(index) & ~Qt.ItemFlag.ItemIsEditable  # Remove a permissão de edição
