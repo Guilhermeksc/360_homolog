@@ -25,6 +25,10 @@ from modules.contratos.view import ContratosView
 from modules.contratos.model import ContratosModel
 from modules.contratos.controller import ContratosController
 
+from modules.planejamento.view import PlanejamentoView
+from modules.planejamento.model import PlanejamentoModel
+from modules.planejamento.controller import PlanejamentoController
+
 # from modules.atas.classe_atas import AtasWidget
 # from modules.pca.models import PCAModel  # Exemplo para PCA
 # from modules.atas.models import AtasModel  # Exemplo para Atas
@@ -59,6 +63,10 @@ __all__ = [
     "ContratosModel",
     "ContratosController",
 
+    "PlanejamentoView",
+    "PlanejamentoModel",
+    "PlanejamentoController",
+    
     # "PCAModel",
     # "AtasModel",
 

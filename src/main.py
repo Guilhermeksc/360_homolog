@@ -71,6 +71,7 @@ class MainWindow(QMainWindow):
             ("api_azul", "api", "Atas (API)", self.show_atas_api),
             ("plan_dispensa_blue", "plan_dispensa", "Dispensa Eletrônica", self.show_dispensa),
             ("contrato_blue", "contrato", "Contratos", self.show_contratos),
+            ("contrato_blue", "contrato", "Planejamento", self.show_planejamento),
             ("statistics_azul", "statistics", "Indicadores", self.show_indicadores),                        
             ("config", "config_hover", "Configurações", self.show_config),
         ]
@@ -276,6 +277,26 @@ class MainWindow(QMainWindow):
         # Adiciona o widget de Dispensa Eletrônica na área de conteúdo
         self.content_layout.addWidget(self.dispensa_widget)
         self.set_active_button(self.buttons["plan_dispensa_blue"])
+
+    def show_planejamento(self):
+        self.clear_content_area()
+        
+        # Instancia o modelo de Dispensa Eletrônica com o caminho do banco de dados
+        self.planejamento_model = PlanejamentoModel(DATA_PLANEJAMENTO_PATH)
+        
+        # Configura o modelo SQL
+        sql_model = self.planejamento_model.setup_model("controle_planejamento", editable=True)
+        
+        # Cria o widget de Dispensa Eletrônica e passa o modelo SQL e o caminho do banco de dados
+        self.planejamento_view = PlanejamentoView(self.icons, sql_model, self.planejamento_model.database_manager.db_path)
+
+        # Cria o controlador e passa o widget e o modelo
+        self.controller_planejamento = PlanejamentoController(self.icons, self.planejamento_view, self.planejamento_model)
+
+        # Adiciona o widget de Dispensa Eletrônica na área de conteúdo
+        self.content_layout.addWidget(self.planejamento_view)
+        self.set_active_button(self.buttons["contrato_blue"])
+
 
     def show_contratos(self):
         self.clear_content_area()

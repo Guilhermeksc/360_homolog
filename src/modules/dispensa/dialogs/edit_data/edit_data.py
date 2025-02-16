@@ -172,7 +172,7 @@ class EditarDadosWindow(QMainWindow):
             h_layout.setSpacing(0)
             h_layout.setContentsMargins(0, 0, 0, 0)
             label = QLabel(label_text)
-            label.setStyleSheet("font-size: 16px")
+            label.setStyleSheet("font-size: 16px; font-weight: bold;")
             h_layout.addWidget(label)
             h_layout.addWidget(combo_box)
             agente_responsavel_layout.addLayout(h_layout)

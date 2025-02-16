@@ -6,6 +6,7 @@ from .config_path import *
 from .atas import *
 from .dispensa import *
 from .contratos import *
+from .planejamento  import *
 
 # Definindo __all__ para controle explícito do que será exportado
 __all__ = [
@@ -18,6 +19,9 @@ __all__ = [
 
     # contratos
     "DATA_CONTRATOS_PATH", "TEMPLATE_CONTRATOS_DIR",
+
+    # planejamento
+    "DATA_PLANEJAMENTO_PATH", "TEMPLATE_PLANEJAMENTO_DIR",
 
     # atas_path
     "TEMPLATE_PATH", "DATA_ATAS_PATH",
